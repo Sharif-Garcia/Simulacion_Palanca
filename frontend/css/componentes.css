@@ -185,6 +185,14 @@
   border-color: var(--color-texto-secundario);
 }
 
+/* --- Detalle de un preset de amortiguamiento (umbral de ζ bajo el nombre) --------- */
+.preset__detalle {
+  display: block;
+  font-size: var(--fuente-tamano-xs);
+  color: var(--color-texto-secundario);
+  margin-top: var(--espacio-xs);
+}
+
 /* --- Valor de resultado (W, F_eq, MA, R, ωn, ζ, etc.) --------------------------------- */
 .resultado {
   display: flex;

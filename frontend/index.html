@@ -42,8 +42,8 @@
           <h2>Dibujo de la palanca</h2>
           <p class="leyenda">
             El punto fijo es el fulcro. A un lado está el brazo de esfuerzo
-            (donde se aplica la fuerza) y al otro el brazo de carga (donde
-            está el peso). La línea punteada marca el tope mecánico a ±30°.
+            (donde se aplica la fuerza) y al otro el brazo de carga (donde está
+            el peso). La línea punteada marca el tope mecánico a ±30°.
           </p>
           <canvas
             id="lienzo-palanca"
@@ -162,6 +162,42 @@
                 </select>
               </label>
 
+              <label class="control-deslizante" for="selector-gravedad">
+                <span class="control-deslizante__cabecera"
+                  >Opciones de amortiguamiento</span
+                >
+              </label>
+
+              <div class="presets-amortiguamiento">
+                <button
+                  id="boton-preset-sobreamortiguada"
+                  type="button"
+                  class="boton boton--secundario"
+                  data-preset="sobreamortiguada"
+                >
+                  Sobreamortiguada <br />
+                  <span class="preset__detalle">ζ &gt; 1</span>
+                </button>
+                <button
+                  id="boton-preset-critica"
+                  type="button"
+                  class="boton boton--secundario"
+                  data-preset="critica"
+                >
+                  Crítica
+                  <span class="preset__detalle">ζ ≈ 1</span>
+                </button>
+                <button
+                  id="boton-preset-subamortiguada"
+                  type="button"
+                  class="boton boton--secundario"
+                  data-preset="subamortiguada"
+                >
+                  Subamortiguada
+                  <span class="preset__detalle">ζ &lt; 1</span>
+                </button>
+              </div>
+
               <div class="fila">
                 <button
                   id="boton-perturbar"
@@ -208,9 +244,7 @@
                   >
                 </div>
                 <div class="resultado">
-                  <span class="resultado__etiqueta"
-                    >Ventaja mecánica (MA)</span
-                  >
+                  <span class="resultado__etiqueta">Ventaja mecánica (MA)</span>
                   <span class="resultado__valor"
                     ><span id="resultado-ventaja-mecanica">—</span></span
                   >
@@ -295,32 +329,7 @@
           Muestra los últimos 6 segundos del ángulo de la palanca. Las líneas
           punteadas horizontales marcan el tope mecánico (±30°).
         </p>
-        <div class="presets-amortiguamiento">
-          <button
-            id="boton-preset-sobreamortiguada"
-            type="button"
-            class="boton boton--secundario"
-            data-preset="sobreamortiguada"
-          >
-            Sobreamortiguada
-          </button>
-          <button
-            id="boton-preset-critica"
-            type="button"
-            class="boton boton--secundario"
-            data-preset="critica"
-          >
-            Crítica
-          </button>
-          <button
-            id="boton-preset-subamortiguada"
-            type="button"
-            class="boton boton--secundario"
-            data-preset="subamortiguada"
-          >
-            Subamortiguada
-          </button>
-        </div>
+
         <canvas
           id="lienzo-grafica"
           role="img"

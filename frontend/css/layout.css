@@ -170,7 +170,16 @@
   flex-wrap: wrap;
 }
 
-/* --- Presets de amortiguamiento: botones junto a la gráfica de ángulo -------------- */
+/* --- Presets de amortiguamiento: botones junto a la gráfica de ángulo --------------
+   .boton es un flex en fila (ver componentes.css); aquí se pone en columna
+   para que el nombre y el umbral de ζ (.preset__detalle) queden apilados en
+   vez de uno junto al otro. gap: 0 porque el espacio entre ambos ya lo pone
+   el margin-top de .preset__detalle. */
+.presets-amortiguamiento .boton {
+  flex-direction: column;
+  gap: 0;
+}
+
 .presets-amortiguamiento {
   display: flex;
   flex-wrap: wrap;
