@@ -146,6 +146,24 @@
   width: 100%;
 }
 
+/* --- Fila del modelo: constantes fijas | ecuaciones completas ---------------------
+   Sin stretch (a diferencia de .fila-principal): son dos tarjetas de
+   referencia independientes, cada una tan alta como necesite su propio
+   contenido, no un par que deba verse parejo. La de ecuaciones es más ancha
+   porque tiene más fórmulas que la de constantes. */
+.fila-modelo {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: var(--espacio-md);
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .fila-modelo {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* --- Secciones internas de una tarjeta -----------------------------------------------
    Uso genérico dentro de .tarjeta (definida en componentes.css): agrupa un
    título con su contenido, o una fila de controles. */

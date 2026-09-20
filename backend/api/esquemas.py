@@ -289,4 +289,8 @@ def construir_configuracion_cliente() -> dict[str, object]:
         "limite_angulo_grados": configuracion.LIMITE_ANGULO_GRADOS,
         "frecuencia_cuadros_hz": configuracion.FRECUENCIA_CUADROS_HZ,
         "presets_amortiguamiento": _construir_presets_amortiguamiento(),
+        "rigidez_restauradora_n_m_rad": configuracion.RIGIDEZ_RESTAURADORA_N_M_RAD,
+        "amortiguamiento_n_m_s_rad": configuracion.AMORTIGUAMIENTO_N_M_S_RAD,
+        "masa_barra_kg": configuracion.MASA_BARRA_KG,
+        "tolerancia_equilibrio_n_m": configuracion.TOLERANCIA_EQUILIBRIO_N_M,
     }

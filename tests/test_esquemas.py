@@ -186,6 +186,10 @@ def test_configuracion_cliente_expone_lo_de_configuracion_py():
     assert resultado["gravedades_m_s2"] == {"Tierra": 9.81, "Luna": 1.62, "Marte": 3.71}
     assert resultado["gravedad_inicial"] == "Tierra"
     assert resultado["limite_angulo_grados"] == 30.0
+    assert resultado["rigidez_restauradora_n_m_rad"] == configuracion.RIGIDEZ_RESTAURADORA_N_M_RAD
+    assert resultado["amortiguamiento_n_m_s_rad"] == configuracion.AMORTIGUAMIENTO_N_M_S_RAD
+    assert resultado["masa_barra_kg"] == configuracion.MASA_BARRA_KG
+    assert resultado["tolerancia_equilibrio_n_m"] == configuracion.TOLERANCIA_EQUILIBRIO_N_M
 
 
 def test_configuracion_cliente_es_json_valido():

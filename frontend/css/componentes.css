@@ -219,6 +219,86 @@
   margin-left: var(--espacio-xs);
 }
 
+/* --- Fórmulas: fracciones y raíces con HTML/CSS puro (sin KaTeX ni MathJax) --------
+   .formula envuelve una ecuación completa. Los exponentes/subíndices usan
+   <sup>/<sub> nativos y las variables <var>; no hace falta marcado propio
+   para ellos. Para fracciones y raíces sí hace falta estructura:
+
+     .fraccion                    .raiz
+       .fraccion__numerador         √ .raiz__radicando (con línea encima)
+       ─────────────────  (borde)
+       .fraccion__denominador
+
+   Se reutiliza en cualquier lugar que muestre una fórmula (tarjeta de
+   Resultados y tarjeta de Ecuaciones), para no repetir este marcado.
+
+   IMPORTANTE: .formula es "display: inline" a propósito, NO flex. Un
+   contenedor flex "blockifica" a todos sus hijos directos (los vuelve cajas
+   de bloque), y una caja de bloque ignora vertical-align — así que un
+   <sup>/<sub> puesto directo dentro de un .formula flex NUNCA se ve elevado
+   o hundido, aunque el navegador lo intente. Con .formula en flujo normal
+   (inline), <sup>/<sub>/<var> se comportan como en cualquier texto, y
+   .fraccion/.raiz (que sí son inline-flex, para apilar su contenido) actúan
+   como "islas" atómicas dentro de ese flujo, igual que una palabra larga. */
+.formula {
+  font-family: var(--fuente-monoespaciada);
+  font-size: var(--fuente-tamano-xs);
+  font-style: normal;
+  color: var(--color-texto-secundario);
+  line-height: 1.8; /* dnos espacio vertical para que numerador/denominador no choquen con la línea de arriba/abajo */
+}
+
+.formula var {
+  font-style: italic;
+}
+
+.fraccion {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.15em;
+}
+
+.fraccion__numerador,
+.fraccion__denominador {
+  display: block;
+  padding: 0 0.2em;
+}
+
+.fraccion__numerador {
+  border-bottom: 1px solid currentColor;
+}
+
+.raiz {
+  display: inline-flex;
+  align-items: flex-start;
+  vertical-align: middle;
+  margin: 0 0.1em;
+}
+
+.raiz::before {
+  content: "√";
+  margin-right: 1px;
+}
+
+.raiz__radicando {
+  display: inline-block;
+  border-top: 1px solid currentColor;
+  padding: 0 0.15em;
+}
+
+/* --- Nota bajo una fórmula (define variables: L, h, θ, τ, etc.) -------------------------
+   display: block basta para que caiga en su propia línea dentro del flujo
+   normal (inline) de .formula: una caja de bloque en medio de contenido en
+   línea corta la línea antes y después, sin necesitar flexbox. */
+.formula__nota {
+  display: block;
+  font-size: var(--fuente-tamano-xs);
+  color: var(--color-texto-tenue);
+  margin-top: var(--espacio-xs);
+}
+
 /* --- Etiqueta de estado (insignia) ----------------------------------------------------
    Usada para el estado de la palanca (equilibrio / sube / baja) y para el
    tipo de respuesta (subamortiguada / crítica / sobreamortiguada). Los

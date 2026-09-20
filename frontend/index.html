@@ -233,6 +233,9 @@
                     ><span id="resultado-peso">—</span
                     ><span class="resultado__unidad">N</span></span
                   >
+                  <span class="formula"
+                    ><var>W</var> = <var>m</var>·<var>g</var></span
+                  >
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta"
@@ -242,12 +245,34 @@
                     ><span id="resultado-fuerza-equilibrio">—</span
                     ><span class="resultado__unidad">N</span></span
                   >
+                  <span class="formula">
+                    <var>F</var><sub>eq</sub> =
+                    <span class="fraccion">
+                      <span class="fraccion__numerador"
+                        ><var>W</var>·<var>d</var><sub>r</sub></span
+                      >
+                      <span class="fraccion__denominador"
+                        ><var>d</var><sub>e</sub></span
+                      >
+                    </span>
+                  </span>
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta">Ventaja mecánica (MA)</span>
                   <span class="resultado__valor"
                     ><span id="resultado-ventaja-mecanica">—</span></span
                   >
+                  <span class="formula">
+                    <var>MA</var> =
+                    <span class="fraccion">
+                      <span class="fraccion__numerador"
+                        ><var>d</var><sub>e</sub></span
+                      >
+                      <span class="fraccion__denominador"
+                        ><var>d</var><sub>r</sub></span
+                      >
+                    </span>
+                  </span>
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta"
@@ -256,6 +281,9 @@
                   <span class="resultado__valor"
                     ><span id="resultado-reaccion">—</span
                     ><span class="resultado__unidad">N</span></span
+                  >
+                  <span class="formula"
+                    ><var>R</var> = <var>F</var> + <var>W</var></span
                   >
                 </div>
               </div>
@@ -287,6 +315,21 @@
                     ><span id="resultado-frecuencia-natural">—</span
                     ><span class="resultado__unidad">rad/s</span></span
                   >
+                  <span class="formula">
+                    ω<sub>n</sub> =
+                    <span class="raiz">
+                      <span class="raiz__radicando">
+                        <span class="fraccion">
+                          <span class="fraccion__numerador"
+                            ><var>k</var></span
+                          >
+                          <span class="fraccion__denominador"
+                            ><var>I</var></span
+                          >
+                        </span>
+                      </span>
+                    </span>
+                  </span>
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta"
@@ -295,6 +338,19 @@
                   <span class="resultado__valor"
                     ><span id="resultado-factor-amortiguamiento">—</span></span
                   >
+                  <span class="formula">
+                    ζ =
+                    <span class="fraccion">
+                      <span class="fraccion__numerador"><var>c</var></span>
+                      <span class="fraccion__denominador"
+                        >2<span class="raiz"
+                          ><span class="raiz__radicando"
+                            ><var>k</var>·<var>I</var></span
+                          ></span
+                        ></span
+                      >
+                    </span>
+                  </span>
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta">Sobreimpulso</span>
@@ -302,6 +358,20 @@
                     ><span id="resultado-sobreimpulso">—</span
                     ><span class="resultado__unidad">%</span></span
                   >
+                  <span class="formula">
+                    <var>M</var><sub>p</sub> = 100·e<sup
+                      ><span class="fraccion">
+                        <span class="fraccion__numerador">−π·ζ</span>
+                        <span class="fraccion__denominador"
+                          ><span class="raiz"
+                            ><span class="raiz__radicando"
+                              >1−ζ<sup>2</sup></span
+                            ></span
+                          ></span
+                        >
+                      </span></sup
+                    >
+                  </span>
                 </div>
                 <div class="resultado">
                   <span class="resultado__etiqueta"
@@ -311,6 +381,16 @@
                     ><span id="resultado-tiempo-establecimiento">—</span
                     ><span class="resultado__unidad">s</span></span
                   >
+                  <span class="formula">
+                    <var>t</var><sub>s</sub> ≈
+                    <span class="fraccion">
+                      <span class="fraccion__numerador">4</span>
+                      <span class="fraccion__denominador"
+                        >ζ·ω<sub>n</sub></span
+                      >
+                    </span>
+                    <span class="formula__nota">caso ζ &lt; 1 (subamortiguada)</span>
+                  </span>
                 </div>
               </div>
               <span
@@ -336,6 +416,254 @@
           aria-label="Gráfica del ángulo de la palanca a lo largo del tiempo"
         ></canvas>
       </section>
+
+      <div class="fila-modelo">
+        <section class="tarjeta" aria-label="Constantes del modelo">
+          <h2 class="tarjeta__titulo">Constantes del modelo</h2>
+          <p class="leyenda">
+            Constantes fijas de configuracion.py: no cambian con los sliders
+            y son las que aparecen en las ecuaciones de la derecha.
+          </p>
+
+          <div class="seccion">
+            <div class="cuadricula-resultados">
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Rigidez restauradora (k)</span
+                >
+                <span class="resultado__valor"
+                  ><span id="constante-rigidez">—</span
+                  ><span class="resultado__unidad">N·m/rad</span></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Amortiguamiento (c)</span>
+                <span class="resultado__valor"
+                  ><span id="constante-amortiguamiento">—</span
+                  ><span class="resultado__unidad">N·m·s/rad</span></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Masa de la barra</span>
+                <span class="resultado__valor"
+                  ><span id="constante-masa-barra">—</span
+                  ><span class="resultado__unidad">kg</span></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Tolerancia de equilibrio</span
+                >
+                <span class="resultado__valor"
+                  ><span id="constante-tolerancia">—</span
+                  ><span class="resultado__unidad">N·m</span></span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="seccion">
+            <h3>Gravedades disponibles</h3>
+            <div class="cuadricula-resultados">
+              <div class="resultado">
+                <span class="resultado__etiqueta">Tierra</span>
+                <span class="resultado__valor"
+                  ><span id="constante-gravedad-tierra">—</span
+                  ><span class="resultado__unidad">m/s²</span></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Luna</span>
+                <span class="resultado__valor"
+                  ><span id="constante-gravedad-luna">—</span
+                  ><span class="resultado__unidad">m/s²</span></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Marte</span>
+                <span class="resultado__valor"
+                  ><span id="constante-gravedad-marte">—</span
+                  ><span class="resultado__unidad">m/s²</span></span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tarjeta" aria-label="Ecuaciones de la palanca">
+          <h2 class="tarjeta__titulo">Ecuaciones de la palanca</h2>
+          <p class="leyenda">
+            El modelo completo: equilibrio estático y respuesta dinámica de
+            segundo orden (el detalle de cada una también aparece bajo su
+            resultado, en la columna de la derecha).
+          </p>
+
+          <div class="seccion">
+            <h3>Estática</h3>
+            <div class="cuadricula-resultados">
+              <div class="resultado">
+                <span class="resultado__etiqueta">Equilibrio (ΣM_O = 0)</span>
+                <span class="formula"
+                  ><var>F</var>·<var>d</var><sub>e</sub> = <var>W</var>·<var
+                    >d</var
+                  ><sub>r</sub></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Peso (W)</span>
+                <span class="formula"
+                  ><var>W</var> = <var>m</var>·<var>g</var></span
+                >
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Fuerza de equilibrio (F_eq)</span
+                >
+                <span class="formula">
+                  <var>F</var><sub>eq</sub> =
+                  <span class="fraccion">
+                    <span class="fraccion__numerador"
+                      ><var>W</var>·<var>d</var><sub>r</sub></span
+                    >
+                    <span class="fraccion__denominador"
+                      ><var>d</var><sub>e</sub></span
+                    >
+                  </span>
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Ventaja mecánica (MA)</span>
+                <span class="formula">
+                  <var>MA</var> =
+                  <span class="fraccion">
+                    <span class="fraccion__numerador"
+                      ><var>d</var><sub>e</sub></span
+                    >
+                    <span class="fraccion__denominador"
+                      ><var>d</var><sub>r</sub></span
+                    >
+                  </span>
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Reacción en el fulcro (R)</span
+                >
+                <span class="formula"
+                  ><var>R</var> = <var>F</var> + <var>W</var></span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="seccion">
+            <h3>Dinámica (segundo orden)</h3>
+            <div class="cuadricula-resultados">
+              <div class="resultado">
+                <span class="resultado__etiqueta">Inercia (I)</span>
+                <span class="formula">
+                  <var>I</var> =
+                  <span class="fraccion">
+                    <span class="fraccion__numerador"
+                      ><var>M</var>·<var>L</var><sup>2</sup></span
+                    >
+                    <span class="fraccion__denominador">12</span>
+                  </span>
+                  + <var>M</var>·<var>h</var><sup>2</sup> + <var>m</var>·<var
+                    >d</var
+                  ><sub>r</sub><sup>2</sup>
+                  <span class="formula__nota"
+                    ><var>L</var> = <var>d</var><sub>r</sub> + <var>d</var
+                    ><sub>e</sub>; <var>h</var> = (<var>d</var><sub>e</sub>
+                    − <var>d</var><sub>r</sub>)/2</span
+                  >
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Ecuación diferencial completa</span
+                >
+                <span class="formula">
+                  <var>I</var>·θ'' + <var>c</var>·θ' + <var>k</var>·θ = τ
+                  <span class="formula__nota"
+                    >θ: ángulo (rad); τ: torque neto (N·m)</span
+                  >
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Frecuencia natural (ωn)</span
+                >
+                <span class="formula">
+                  ω<sub>n</sub> =
+                  <span class="raiz">
+                    <span class="raiz__radicando">
+                      <span class="fraccion">
+                        <span class="fraccion__numerador"><var>k</var></span>
+                        <span class="fraccion__denominador"
+                          ><var>I</var></span
+                        >
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Factor de amortiguamiento (ζ)</span
+                >
+                <span class="formula">
+                  ζ =
+                  <span class="fraccion">
+                    <span class="fraccion__numerador"><var>c</var></span>
+                    <span class="fraccion__denominador"
+                      >2<span class="raiz"
+                        ><span class="raiz__radicando"
+                          ><var>k</var>·<var>I</var></span
+                        ></span
+                      ></span
+                    >
+                  </span>
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta">Sobreimpulso (Mp)</span>
+                <span class="formula">
+                  <var>M</var><sub>p</sub> = 100·e<sup
+                    ><span class="fraccion">
+                      <span class="fraccion__numerador">−π·ζ</span>
+                      <span class="fraccion__denominador"
+                        ><span class="raiz"
+                          ><span class="raiz__radicando"
+                            >1−ζ<sup>2</sup></span
+                          ></span
+                        ></span
+                      >
+                    </span></sup
+                  >
+                </span>
+              </div>
+              <div class="resultado">
+                <span class="resultado__etiqueta"
+                  >Tiempo de establecimiento (ts)</span
+                >
+                <span class="formula">
+                  <var>t</var><sub>s</sub> ≈
+                  <span class="fraccion">
+                    <span class="fraccion__numerador">4</span>
+                    <span class="fraccion__denominador"
+                      >ζ·ω<sub>n</sub></span
+                    >
+                  </span>
+                  <span class="formula__nota"
+                    >caso ζ &lt; 1 (subamortiguada)</span
+                  >
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer class="pie">
