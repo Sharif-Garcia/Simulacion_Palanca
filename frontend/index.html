@@ -29,252 +29,275 @@
         <span class="indicador-conexion__punto"></span>
         <span id="texto-conexion">Conectando…</span>
       </span>
+      <div class="encabezado__acciones">
+        <button
+          id="boton-perturbar"
+          type="button"
+          class="boton boton--primario"
+        >
+          Perturbar
+        </button>
+        <button
+          id="boton-reiniciar"
+          type="button"
+          class="boton boton--secundario"
+        >
+          Reiniciar
+        </button>
+      </div>
     </header>
 
     <main class="contenido">
-      <section class="panel-simulacion" aria-label="Simulación visual">
-        <div class="superficie-dibujo panel-simulacion__dibujo">
+      <div class="fila-principal">
+        <section
+          class="tarjeta tarjeta--visual columna-palanca"
+          aria-label="Simulación visual"
+        >
+          <h2>Dibujo de la palanca</h2>
+          <p class="leyenda">
+            El punto fijo es el fulcro. A un lado está el brazo de esfuerzo
+            (donde se aplica la fuerza) y al otro el brazo de carga (donde
+            está el peso). La línea punteada marca el tope mecánico a ±30°.
+          </p>
           <canvas
             id="lienzo-palanca"
             role="img"
             aria-label="Dibujo de la palanca, actualizado en tiempo real"
           ></canvas>
-        </div>
-
-        <div class="superficie-dibujo panel-simulacion__grafica">
-          <canvas
-            id="lienzo-grafica"
-            role="img"
-            aria-label="Gráfica del ángulo de la palanca a lo largo del tiempo"
-          ></canvas>
-        </div>
-
-        <p
-          class="solo-lectores-pantalla"
-          id="lectura-en-vivo"
-          aria-live="polite"
-        ></p>
-      </section>
-
-      <aside class="panel-lateral" aria-label="Controles y resultados">
-        <section class="tarjeta">
-          <h2 class="tarjeta__titulo">Controles</h2>
-
-          <div class="seccion">
-            <label class="control-deslizante" for="control-masa">
-              <span class="control-deslizante__cabecera">
-                Masa de la carga
-                <span class="control-deslizante__valor"
-                  ><span id="valor-masa">50</span> kg</span
-                >
-              </span>
-              <input
-                type="range"
-                id="control-masa"
-                name="masa_kg"
-                min="1"
-                max="200"
-                step="1"
-                value="50"
-              />
-              <span class="control-deslizante__rango"
-                ><span>1 kg</span><span>200 kg</span></span
-              >
-            </label>
-
-            <label class="control-deslizante" for="control-distancia-carga">
-              <span class="control-deslizante__cabecera">
-                Distancia carga al fulcro
-                <span class="control-deslizante__valor"
-                  ><span id="valor-distancia-carga">0.50</span> m</span
-                >
-              </span>
-              <input
-                type="range"
-                id="control-distancia-carga"
-                name="distancia_carga_m"
-                min="0.1"
-                max="3"
-                step="0.05"
-                value="0.5"
-              />
-              <span class="control-deslizante__rango"
-                ><span>0.1 m</span><span>3 m</span></span
-              >
-            </label>
-
-            <label class="control-deslizante" for="control-distancia-esfuerzo">
-              <span class="control-deslizante__cabecera">
-                Distancia esfuerzo al fulcro
-                <span class="control-deslizante__valor"
-                  ><span id="valor-distancia-esfuerzo">2.00</span> m</span
-                >
-              </span>
-              <input
-                type="range"
-                id="control-distancia-esfuerzo"
-                name="distancia_esfuerzo_m"
-                min="0.1"
-                max="5"
-                step="0.05"
-                value="2"
-              />
-              <span class="control-deslizante__rango"
-                ><span>0.1 m</span><span>5 m</span></span
-              >
-            </label>
-
-            <label class="control-deslizante" for="control-fuerza">
-              <span class="control-deslizante__cabecera">
-                Fuerza aplicada
-                <span class="control-deslizante__valor"
-                  ><span id="valor-fuerza">122.6</span> N</span
-                >
-              </span>
-              <input
-                type="range"
-                id="control-fuerza"
-                name="fuerza_n"
-                min="0"
-                max="1000"
-                step="0.1"
-                value="122.6"
-              />
-              <span class="control-deslizante__rango"
-                ><span>0 N</span><span>1000 N</span></span
-              >
-            </label>
-
-            <label class="control-deslizante" for="selector-gravedad">
-              <span class="control-deslizante__cabecera">Gravedad</span>
-              <select
-                id="selector-gravedad"
-                name="nombre_gravedad"
-                class="selector"
-              >
-                <option value="Tierra" selected>Tierra (9.81 m/s²)</option>
-                <option value="Luna">Luna (1.62 m/s²)</option>
-                <option value="Marte">Marte (3.71 m/s²)</option>
-              </select>
-            </label>
-
-            <div class="fila">
-              <button
-                id="boton-perturbar"
-                type="button"
-                class="boton boton--primario"
-              >
-                Perturbar
-              </button>
-              <button
-                id="boton-reiniciar"
-                type="button"
-                class="boton boton--secundario"
-              >
-                Reiniciar
-              </button>
-            </div>
-          </div>
-
-          <p id="mensaje-error" class="mensaje-error" hidden role="alert"></p>
+          <p
+            class="solo-lectores-pantalla"
+            id="lectura-en-vivo"
+            aria-live="polite"
+          ></p>
         </section>
 
-        <section class="tarjeta">
-          <h2 class="tarjeta__titulo">Resultados</h2>
+        <section class="columna-controles" aria-label="Controles">
+          <section class="tarjeta">
+            <h2 class="tarjeta__titulo">Controles</h2>
 
-          <div class="seccion">
-            <h3>Estática</h3>
-            <div class="cuadricula-resultados">
-              <div class="resultado">
-                <span class="resultado__etiqueta">Peso de la carga (W)</span>
-                <span class="resultado__valor"
-                  ><span id="resultado-peso">—</span
-                  ><span class="resultado__unidad">N</span></span
+            <div class="seccion">
+              <label class="control-deslizante" for="control-masa">
+                <span class="control-deslizante__cabecera">
+                  Masa de la carga
+                  <span class="control-deslizante__valor"
+                    ><span id="valor-masa">50</span> kg</span
+                  >
+                </span>
+                <input
+                  type="range"
+                  id="control-masa"
+                  name="masa_kg"
+                  min="1"
+                  max="200"
+                  step="1"
+                  value="50"
+                />
+                <span class="control-deslizante__rango"
+                  ><span>1 kg</span><span>200 kg</span></span
                 >
+              </label>
+
+              <label class="control-deslizante" for="control-distancia-carga">
+                <span class="control-deslizante__cabecera">
+                  Distancia carga al fulcro
+                  <span class="control-deslizante__valor"
+                    ><span id="valor-distancia-carga">0.50</span> m</span
+                  >
+                </span>
+                <input
+                  type="range"
+                  id="control-distancia-carga"
+                  name="distancia_carga_m"
+                  min="0.1"
+                  max="3"
+                  step="0.05"
+                  value="0.5"
+                />
+                <span class="control-deslizante__rango"
+                  ><span>0.1 m</span><span>3 m</span></span
+                >
+              </label>
+
+              <label
+                class="control-deslizante"
+                for="control-distancia-esfuerzo"
+              >
+                <span class="control-deslizante__cabecera">
+                  Distancia esfuerzo al fulcro
+                  <span class="control-deslizante__valor"
+                    ><span id="valor-distancia-esfuerzo">2.00</span> m</span
+                  >
+                </span>
+                <input
+                  type="range"
+                  id="control-distancia-esfuerzo"
+                  name="distancia_esfuerzo_m"
+                  min="0.1"
+                  max="5"
+                  step="0.05"
+                  value="2"
+                />
+                <span class="control-deslizante__rango"
+                  ><span>0.1 m</span><span>5 m</span></span
+                >
+              </label>
+
+              <label class="control-deslizante" for="control-fuerza">
+                <span class="control-deslizante__cabecera">
+                  Fuerza aplicada
+                  <span class="control-deslizante__valor"
+                    ><span id="valor-fuerza">122.6</span> N</span
+                  >
+                </span>
+                <input
+                  type="range"
+                  id="control-fuerza"
+                  name="fuerza_n"
+                  min="0"
+                  max="1000"
+                  step="0.1"
+                  value="122.6"
+                />
+                <span class="control-deslizante__rango"
+                  ><span>0 N</span><span>1000 N</span></span
+                >
+              </label>
+
+              <label class="control-deslizante" for="selector-gravedad">
+                <span class="control-deslizante__cabecera">Gravedad</span>
+                <select
+                  id="selector-gravedad"
+                  name="nombre_gravedad"
+                  class="selector"
+                >
+                  <option value="Tierra" selected>Tierra (9.81 m/s²)</option>
+                  <option value="Luna">Luna (1.62 m/s²)</option>
+                  <option value="Marte">Marte (3.71 m/s²)</option>
+                </select>
+              </label>
+            </div>
+
+            <p id="mensaje-error" class="mensaje-error" hidden role="alert"></p>
+          </section>
+        </section>
+
+        <section class="columna-resultados" aria-label="Resultados">
+          <section class="tarjeta">
+            <h2 class="tarjeta__titulo">Resultados</h2>
+
+            <div class="seccion">
+              <h3>Estática</h3>
+              <div class="cuadricula-resultados">
+                <div class="resultado">
+                  <span class="resultado__etiqueta">Peso de la carga (W)</span>
+                  <span class="resultado__valor"
+                    ><span id="resultado-peso">—</span
+                    ><span class="resultado__unidad">N</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Fuerza de equilibrio (F_eq)</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-fuerza-equilibrio">—</span
+                    ><span class="resultado__unidad">N</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Ventaja mecánica (MA)</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-ventaja-mecanica">—</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Reacción en el fulcro (R)</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-reaccion">—</span
+                    ><span class="resultado__unidad">N</span></span
+                  >
+                </div>
               </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta"
-                  >Fuerza de equilibrio (F_eq)</span
+            </div>
+
+            <div class="seccion">
+              <h3>Estado actual</h3>
+              <div class="fila fila--envuelve">
+                <span id="insignia-estado" class="insignia insignia--neutra"
+                  >—</span
                 >
-                <span class="resultado__valor"
-                  ><span id="resultado-fuerza-equilibrio">—</span
-                  ><span class="resultado__unidad">N</span></span
-                >
-              </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta">Ventaja mecánica (MA)</span>
-                <span class="resultado__valor"
-                  ><span id="resultado-ventaja-mecanica">—</span></span
-                >
-              </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta"
-                  >Reacción en el fulcro (R)</span
-                >
-                <span class="resultado__valor"
-                  ><span id="resultado-reaccion">—</span
-                  ><span class="resultado__unidad">N</span></span
+                <span
+                  id="insignia-tope"
+                  class="insignia insignia--advertencia"
+                  hidden
+                  >Tope alcanzado</span
                 >
               </div>
             </div>
-          </div>
 
-          <div class="seccion">
-            <h3>Estado actual</h3>
-            <div class="fila fila--envuelve">
-              <span id="insignia-estado" class="insignia insignia--neutra"
+            <div class="seccion">
+              <h3>Dinámica (segundo orden)</h3>
+              <div class="cuadricula-resultados">
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Frecuencia natural (ωn)</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-frecuencia-natural">—</span
+                    ><span class="resultado__unidad">rad/s</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Factor de amortiguamiento (ζ)</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-factor-amortiguamiento">—</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta">Sobreimpulso</span>
+                  <span class="resultado__valor"
+                    ><span id="resultado-sobreimpulso">—</span
+                    ><span class="resultado__unidad">%</span></span
+                  >
+                </div>
+                <div class="resultado">
+                  <span class="resultado__etiqueta"
+                    >Tiempo de establecimiento</span
+                  >
+                  <span class="resultado__valor"
+                    ><span id="resultado-tiempo-establecimiento">—</span
+                    ><span class="resultado__unidad">s</span></span
+                  >
+                </div>
+              </div>
+              <span
+                id="insignia-tipo-respuesta"
+                class="insignia insignia--neutra"
                 >—</span
               >
-              <span
-                id="insignia-tope"
-                class="insignia insignia--advertencia"
-                hidden
-                >Tope alcanzado</span
-              >
             </div>
-          </div>
-
-          <div class="seccion">
-            <h3>Dinámica (segundo orden)</h3>
-            <div class="cuadricula-resultados">
-              <div class="resultado">
-                <span class="resultado__etiqueta">Frecuencia natural (ωn)</span>
-                <span class="resultado__valor"
-                  ><span id="resultado-frecuencia-natural">—</span
-                  ><span class="resultado__unidad">rad/s</span></span
-                >
-              </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta"
-                  >Factor de amortiguamiento (ζ)</span
-                >
-                <span class="resultado__valor"
-                  ><span id="resultado-factor-amortiguamiento">—</span></span
-                >
-              </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta">Sobreimpulso</span>
-                <span class="resultado__valor"
-                  ><span id="resultado-sobreimpulso">—</span
-                  ><span class="resultado__unidad">%</span></span
-                >
-              </div>
-              <div class="resultado">
-                <span class="resultado__etiqueta"
-                  >Tiempo de establecimiento</span
-                >
-                <span class="resultado__valor"
-                  ><span id="resultado-tiempo-establecimiento">—</span
-                  ><span class="resultado__unidad">s</span></span
-                >
-              </div>
-            </div>
-            <span id="insignia-tipo-respuesta" class="insignia insignia--neutra"
-              >—</span
-            >
-          </div>
+          </section>
         </section>
-      </aside>
+      </div>
+
+      <section class="tarjeta tarjeta--visual fila-grafica">
+        <h2>Ángulo en el tiempo</h2>
+        <p class="leyenda">
+          Muestra los últimos 6 segundos del ángulo de la palanca. Las líneas
+          punteadas horizontales marcan el tope mecánico (±30°).
+        </p>
+        <canvas
+          id="lienzo-grafica"
+          role="img"
+          aria-label="Gráfica del ángulo de la palanca a lo largo del tiempo"
+        ></canvas>
+      </section>
     </main>
 
     <footer class="pie">

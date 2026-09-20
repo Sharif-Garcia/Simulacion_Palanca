@@ -91,7 +91,10 @@
   --duracion-transicion-media: 240ms;
   --curva-estandar: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* --- Diseño (breakpoint y anchos) -------------------------------------------- */
-  --ancho-maximo-contenido: 72rem;
+  /* --- Diseño (breakpoints) ------------------------------------------------------
+     punto-quiebre-lg: por debajo de este ancho, la fila principal de tres
+     columnas (palanca | controles | resultados) queda demasiado apretada
+     (por ejemplo, en un laptop de 13") y se apila en una sola columna. */
   --punto-quiebre-md: 768px;
+  --punto-quiebre-lg: 1200px;
 }
