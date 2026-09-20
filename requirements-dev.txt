@@ -1,0 +1,4 @@
+# Dependencias de desarrollo: incluye las de ejecución y agrega pruebas
+-r requirements.txt
+pytest>=8.0
+httpx>=0.27

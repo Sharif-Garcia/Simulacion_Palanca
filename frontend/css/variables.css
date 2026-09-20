@@ -1,0 +1,97 @@
+/* ============================================================================
+   Tokens de diseño del simulador de la palanca.
+
+   ÚNICA fuente de verdad para colores, tipografía, espaciados y tiempos de
+   animación. Ningún otro archivo CSS o JavaScript escribe un color o una
+   medida directamente: todos usan var(--nombre-del-token).
+
+   Convención de nombres: --categoria-detalle-variante
+     (ej. --color-superficie-elevada, --espacio-md, --fuente-tamano-lg)
+   ============================================================================ */
+
+:root {
+  /* --- Color: paleta base ------------------------------------------------ */
+  --color-fondo: #0f1720;
+  --color-superficie: #17212c;
+  --color-superficie-elevada: #1f2b38;
+  --color-borde: #2c3b4a;
+
+  --color-texto-primario: #eaf0f6;
+  --color-texto-secundario: #9fb1c1;
+  --color-texto-tenue: #6b7e8f;
+
+  /* --- Color: acento (identidad del proyecto) ----------------------------- */
+  --color-acento: #4fd1c5;
+  --color-acento-fuerte: #2bb8ab;
+  --color-acento-tenue: rgba(79, 209, 197, 0.16);
+
+  /* --- Color: estado semántico --------------------------------------------
+     Se usan para el mensaje de la palanca (sube/baja/equilibrio) y para los
+     mensajes de error o aviso del panel de resultados. */
+  --color-exito: #4ade80;
+  --color-exito-tenue: rgba(74, 222, 128, 0.16);
+  --color-advertencia: #fbbf24;
+  --color-advertencia-tenue: rgba(251, 191, 36, 0.16);
+  --color-peligro: #f87171;
+  --color-peligro-tenue: rgba(248, 113, 113, 0.16);
+
+  /* --- Color: elementos del dibujo de la palanca -------------------------- */
+  --color-barra: #cbd5e1;
+  --color-fulcro: var(--color-acento);
+  --color-carga: var(--color-peligro);
+  --color-esfuerzo: var(--color-exito);
+  --color-guia: #334454;
+
+  /* --- Color: gráfica de ángulo -------------------------------------------- */
+  --color-grafica-linea: var(--color-acento);
+  --color-grafica-relleno: var(--color-acento-tenue);
+  --color-grafica-eje: var(--color-texto-tenue);
+  --color-grafica-referencia: var(--color-advertencia);
+
+  /* --- Tipografía ----------------------------------------------------------- */
+  --fuente-base: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --fuente-monoespaciada: "Cascadia Code", "Consolas", "Courier New", monospace;
+
+  --fuente-tamano-xs: 0.75rem; /* 12px: unidades, textos auxiliares */
+  --fuente-tamano-sm: 0.875rem; /* 14px: etiquetas de los controles */
+  --fuente-tamano-md: 1rem; /* 16px: texto general */
+  --fuente-tamano-lg: 1.25rem; /* 20px: valores de los resultados */
+  --fuente-tamano-xl: 1.75rem; /* 28px: título de la aplicación */
+
+  --fuente-peso-normal: 400;
+  --fuente-peso-semi: 600;
+  --fuente-peso-negrita: 700;
+
+  --fuente-interlineado: 1.5;
+
+  /* --- Espaciado (escala de 4px) --------------------------------------------
+     Un solo número cambia toda la densidad visual del proyecto. */
+  --espacio-xs: 0.25rem; /* 4px */
+  --espacio-sm: 0.5rem; /* 8px */
+  --espacio-md: 1rem; /* 16px */
+  --espacio-lg: 1.5rem; /* 24px */
+  --espacio-xl: 2rem; /* 32px */
+  --espacio-xxl: 3rem; /* 48px */
+
+  /* --- Bordes y sombras ------------------------------------------------------ */
+  --radio-sm: 0.375rem;
+  --radio-md: 0.625rem;
+  --radio-lg: 1rem;
+  --radio-circular: 50%;
+
+  --sombra-superficie: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sombra-elevada: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* --- Animación e interacción ------------------------------------------------
+     duracion-cuadro coincide con FRECUENCIA_CUADROS_HZ del backend (60 Hz).
+     Si el backend cambiara esa frecuencia, este valor se ajusta aquí, no en
+     cada componente. */
+  --duracion-cuadro: 16.6667ms;
+  --duracion-transicion-rapida: 120ms;
+  --duracion-transicion-media: 240ms;
+  --curva-estandar: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Diseño (breakpoint y anchos) -------------------------------------------- */
+  --ancho-maximo-contenido: 72rem;
+  --punto-quiebre-md: 768px;
+}

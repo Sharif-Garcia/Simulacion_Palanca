@@ -1,0 +1,15 @@
+# Bytecode generado por Python
+__pycache__/
+*.py[cod]
+
+# Entorno virtual
+.venv/
+
+# Caché de pytest
+.pytest_cache/
+
+# Archivos del sistema y del editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

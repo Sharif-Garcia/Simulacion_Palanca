@@ -1,0 +1,181 @@
+/* ============================================================================
+   Estilos base: reseteo del navegador y apariencia por defecto de los
+   elementos HTML (body, títulos, texto, formularios).
+
+   Regla del proyecto: aquí NO se escribe ningún color, tamaño o espaciado
+   directamente. Todo usa var(--token) de variables.css (DRY). Este archivo
+   se enlaza siempre después de variables.css.
+   ============================================================================ */
+
+/* --- Reseteo mínimo ---------------------------------------------------------
+   No se usa un reseteo agresivo (tipo "* { margin: 0 }") para no eliminar
+   comportamientos útiles del navegador; solo lo estrictamente necesario. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Respeta el tamaño de fuente configurado por la persona en su navegador,
+     en vez de fijar un tamaño absoluto (accesibilidad). */
+  -webkit-text-size-adjust: 100%;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* --- Documento --------------------------------------------------------------- */
+body {
+  min-height: 100vh;
+  background-color: var(--color-fondo);
+  color: var(--color-texto-primario);
+  font-family: var(--fuente-base);
+  font-size: var(--fuente-tamano-md);
+  font-weight: var(--fuente-peso-normal);
+  line-height: var(--fuente-interlineado);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Títulos ------------------------------------------------------------------- */
+h1,
+h2,
+h3 {
+  font-weight: var(--fuente-peso-semi);
+  line-height: 1.25;
+  color: var(--color-texto-primario);
+}
+
+h1 {
+  font-size: var(--fuente-tamano-xl);
+}
+
+h2 {
+  font-size: var(--fuente-tamano-lg);
+}
+
+h3 {
+  font-size: var(--fuente-tamano-md);
+  font-weight: var(--fuente-peso-semi);
+}
+
+/* --- Texto y enlaces ------------------------------------------------------------- */
+p {
+  color: var(--color-texto-secundario);
+}
+
+small {
+  font-size: var(--fuente-tamano-xs);
+  color: var(--color-texto-tenue);
+}
+
+a {
+  color: var(--color-acento);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--fuente-monoespaciada);
+  font-size: 0.9em;
+}
+
+/* --- Formularios ------------------------------------------------------------------
+   Los sliders y campos numéricos heredan de aquí; componentes.css solo agrega
+   los detalles propios de cada control, no repite lo de esta sección. */
+button,
+input,
+select {
+  font-family: inherit;
+  font-size: var(--fuente-tamano-sm);
+  color: var(--color-texto-primario);
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+input,
+select {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+}
+
+/* --- Accesibilidad: foco visible ----------------------------------------------------
+   Un anillo de foco consistente para quien navega con teclado, en vez del
+   contorno por defecto del navegador (que varía y a veces es difícil de ver
+   sobre fondo oscuro). */
+:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+/* --- Barra de scroll (WebKit: Chrome, Edge) --------------------------------------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-fondo);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-borde);
+  border-radius: var(--radio-sm);
+}
+/* --- Atributo hidden: siempre oculta, sin importar el "display" del componente ----
+   Sin esto, una clase con "display: flex/grid/inline-flex" (como .insignia)
+   puede ganarle en especificidad a la regla por defecto del navegador para
+   [hidden], y el elemento se muestra igual aunque tenga el atributo. Con
+   !important se garantiza que hidden es siempre la última palabra. */
+[hidden] {
+  display: none !important;
+}
+
+/* --- Movimiento reducido -----------------------------------------------------------
+   Si la persona configuró su sistema para reducir animaciones, la simulación
+   sigue funcionando (los datos igual llegan y se actualizan), pero las
+   transiciones decorativas de la interfaz se apagan. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

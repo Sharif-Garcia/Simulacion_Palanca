@@ -1,0 +1,4 @@
+# Dependencias de ejecución del simulador de la palanca
+fastapi>=0.110
+uvicorn[standard]>=0.29
+numpy>=1.26
