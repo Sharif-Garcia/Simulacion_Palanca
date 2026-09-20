@@ -191,3 +191,17 @@ def test_configuracion_cliente_expone_lo_de_configuracion_py():
 def test_configuracion_cliente_es_json_valido():
     configuracion_cliente = construir_configuracion_cliente()
     assert json.loads(a_json(configuracion_cliente)) == configuracion_cliente
+
+
+def test_configuracion_cliente_expone_presets_de_amortiguamiento():
+    """Cada preset debe producir exactamente el tipo de respuesta que nombra,
+    partiendo del equilibrio (torque neto cero), para que "Perturbar" muestre
+    la respuesta pura de ese amortiguamiento."""
+    resultado = construir_configuracion_cliente()
+    presets = resultado["presets_amortiguamiento"]
+    assert set(presets) == {"sobreamortiguada", "critica", "subamortiguada"}
+
+    for nombre, preset in presets.items():
+        resultados = resolver_dinamica(ParametrosPalanca(**preset))
+        assert resultados.tipo_respuesta.value == nombre
+        assert resultados.torque_neto_n_m == pytest.approx(0.0, abs=1e-6)

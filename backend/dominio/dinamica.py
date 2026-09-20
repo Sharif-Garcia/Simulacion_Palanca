@@ -47,6 +47,24 @@ FACTOR_TIEMPO_ESTABLECIMIENTO_CRITICO = 5.83  # ts ≈ 5.83 / ωn si ζ = 1
 TOLERANCIA_AMORTIGUAMIENTO_CRITICO = 1e-3
 
 
+def _inercia_barra_kg_m2(
+    distancia_carga_m: float, distancia_esfuerzo_m: float, masa_barra_kg: float
+) -> float:
+    """Inercia de la barra sola (sin la carga) respecto al fulcro.
+
+    La barra mide d_r + d_e y el fulcro está a d_r de un extremo, así que su
+    centro queda a (d_e - d_r) / 2 del fulcro. Teorema de los ejes paralelos:
+        I_barra = M·L²/12 + M·desplazamiento²
+
+    No depende de la masa de la carga: calcular_inercia_kg_m2() la reutiliza
+    para el total, y calcular_masa_amortiguamiento_critico() para despejar la
+    masa a partir de la inercia que necesita.
+    """
+    longitud_barra_m = distancia_carga_m + distancia_esfuerzo_m
+    desplazamiento_centro_m = (distancia_esfuerzo_m - distancia_carga_m) / 2.0
+    return masa_barra_kg * longitud_barra_m**2 / 12.0 + masa_barra_kg * desplazamiento_centro_m**2
+
+
 def calcular_inercia_kg_m2(
     masa_kg: float,
     distancia_carga_m: float,
@@ -55,21 +73,41 @@ def calcular_inercia_kg_m2(
 ) -> float:
     """Momento de inercia respecto al fulcro: barra uniforme + carga puntual.
 
-    La barra mide d_r + d_e y el fulcro está a d_r de un extremo, así que su
-    centro queda a (d_e - d_r) / 2 del fulcro. Teorema de los ejes paralelos:
-        I_barra = M·L²/12 + M·desplazamiento²
-        I_carga = m·d_r²
+        I = I_barra + I_carga,   I_carga = m·d_r²
     """
     exigir_positivo("masa_kg", masa_kg)
     exigir_positivo("distancia_carga_m", distancia_carga_m)
     exigir_positivo("distancia_esfuerzo_m", distancia_esfuerzo_m)
     exigir_positivo("masa_barra_kg", masa_barra_kg)
 
-    longitud_barra_m = distancia_carga_m + distancia_esfuerzo_m
-    desplazamiento_centro_m = (distancia_esfuerzo_m - distancia_carga_m) / 2.0
-    inercia_barra = masa_barra_kg * longitud_barra_m**2 / 12.0 + masa_barra_kg * desplazamiento_centro_m**2
     inercia_carga = masa_kg * distancia_carga_m**2
-    return inercia_barra + inercia_carga
+    return _inercia_barra_kg_m2(distancia_carga_m, distancia_esfuerzo_m, masa_barra_kg) + inercia_carga
+
+
+def calcular_masa_amortiguamiento_critico(
+    distancia_carga_m: float,
+    distancia_esfuerzo_m: float,
+    masa_barra_kg: float = configuracion.MASA_BARRA_KG,
+    rigidez_n_m_rad: float = configuracion.RIGIDEZ_RESTAURADORA_N_M_RAD,
+    amortiguamiento_n_m_s_rad: float = configuracion.AMORTIGUAMIENTO_N_M_S_RAD,
+) -> float:
+    """Masa de la carga que deja el sistema exactamente en amortiguamiento crítico (ζ = 1).
+
+    Se despeja I de ζ = c / (2·√(k·I)):  I_crítica = c² / (4·k). Como
+    I = I_barra + m·d_r² (calcular_inercia_kg_m2) y la inercia de la barra no
+    depende de la masa de la carga, basta restar I_barra y dividir entre d_r²
+    para obtener la masa que produce esa I.
+    """
+    exigir_positivo("distancia_carga_m", distancia_carga_m)
+    exigir_positivo("distancia_esfuerzo_m", distancia_esfuerzo_m)
+    exigir_positivo("masa_barra_kg", masa_barra_kg)
+    exigir_positivo("rigidez_n_m_rad", rigidez_n_m_rad)
+    exigir_positivo("amortiguamiento_n_m_s_rad", amortiguamiento_n_m_s_rad)
+
+    inercia_critica = amortiguamiento_n_m_s_rad**2 / (4.0 * rigidez_n_m_rad)
+    inercia_barra = _inercia_barra_kg_m2(distancia_carga_m, distancia_esfuerzo_m, masa_barra_kg)
+    masa_kg = (inercia_critica - inercia_barra) / distancia_carga_m**2
+    return exigir_positivo("masa_kg", masa_kg)
 
 
 def calcular_frecuencia_natural_rad_s(rigidez_n_m_rad: float, inercia_kg_m2: float) -> float:

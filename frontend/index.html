@@ -22,28 +22,14 @@
           Equilibrio estático y respuesta dinámica de segundo orden
         </p>
       </div>
-      <span
-        id="indicador-conexion"
-        class="indicador-conexion indicador-conexion--desconectado"
-      >
-        <span class="indicador-conexion__punto"></span>
-        <span id="texto-conexion">Conectando…</span>
-      </span>
       <div class="encabezado__acciones">
-        <button
-          id="boton-perturbar"
-          type="button"
-          class="boton boton--primario"
+        <span
+          id="indicador-conexion"
+          class="indicador-conexion indicador-conexion--desconectado"
         >
-          Perturbar
-        </button>
-        <button
-          id="boton-reiniciar"
-          type="button"
-          class="boton boton--secundario"
-        >
-          Reiniciar
-        </button>
+          <span class="indicador-conexion__punto"></span>
+          <span id="texto-conexion">Conectando…</span>
+        </span>
       </div>
     </header>
 
@@ -175,6 +161,23 @@
                   <option value="Marte">Marte (3.71 m/s²)</option>
                 </select>
               </label>
+
+              <div class="fila">
+                <button
+                  id="boton-perturbar"
+                  type="button"
+                  class="boton boton--primario"
+                >
+                  Perturbar
+                </button>
+                <button
+                  id="boton-reiniciar"
+                  type="button"
+                  class="boton boton--secundario"
+                >
+                  Reiniciar
+                </button>
+              </div>
             </div>
 
             <p id="mensaje-error" class="mensaje-error" hidden role="alert"></p>
@@ -292,6 +295,32 @@
           Muestra los últimos 6 segundos del ángulo de la palanca. Las líneas
           punteadas horizontales marcan el tope mecánico (±30°).
         </p>
+        <div class="presets-amortiguamiento">
+          <button
+            id="boton-preset-sobreamortiguada"
+            type="button"
+            class="boton boton--secundario"
+            data-preset="sobreamortiguada"
+          >
+            Sobreamortiguada
+          </button>
+          <button
+            id="boton-preset-critica"
+            type="button"
+            class="boton boton--secundario"
+            data-preset="critica"
+          >
+            Crítica
+          </button>
+          <button
+            id="boton-preset-subamortiguada"
+            type="button"
+            class="boton boton--secundario"
+            data-preset="subamortiguada"
+          >
+            Subamortiguada
+          </button>
+        </div>
         <canvas
           id="lienzo-grafica"
           role="img"

@@ -14,6 +14,7 @@ from backend.dominio.dinamica import (
     calcular_factor_amortiguamiento,
     calcular_frecuencia_natural_rad_s,
     calcular_inercia_kg_m2,
+    calcular_masa_amortiguamiento_critico,
     calcular_rapidez_maxima_rad_s,
     calcular_sobreimpulso_porcentaje,
     calcular_tiempo_establecimiento_s,
@@ -73,6 +74,40 @@ def test_frecuencia_natural():
 
 def test_factor_amortiguamiento():
     assert calcular_factor_amortiguamiento(20.0, 100.0, 4.0) == pytest.approx(0.5)
+
+
+# --- Masa que produce amortiguamiento crítico (ζ = 1) ------------------------
+def test_masa_amortiguamiento_critico_da_zeta_uno():
+    # Barra centrada (d_r = d_e = 1 m) de 3 kg: I_barra = 3·2²/12 = 1.
+    # k = 100, c = 40 => I_crítica = c² / (4·k) = 1600/400 = 4 =>
+    # masa = (I_crítica - I_barra) / d_r² = (4 - 1) / 1² = 3 kg.
+    masa_kg = calcular_masa_amortiguamiento_critico(
+        distancia_carga_m=1.0,
+        distancia_esfuerzo_m=1.0,
+        masa_barra_kg=3.0,
+        rigidez_n_m_rad=100.0,
+        amortiguamiento_n_m_s_rad=40.0,
+    )
+    assert masa_kg == pytest.approx(3.0)
+
+    inercia = calcular_inercia_kg_m2(masa_kg, 1.0, 1.0, masa_barra_kg=3.0)
+    assert calcular_factor_amortiguamiento(40.0, 100.0, inercia) == pytest.approx(1.0)
+
+
+def test_masa_amortiguamiento_critico_con_constantes_por_defecto_cabe_en_el_rango():
+    # Con las distancias iniciales y las constantes k, c de configuracion.py,
+    # la masa crítica debe caer dentro del rango permitido del slider.
+    rangos = configuracion.RANGOS_PARAMETROS
+    masa_kg = calcular_masa_amortiguamiento_critico(
+        rangos["distancia_carga_m"].valor_inicial,
+        rangos["distancia_esfuerzo_m"].valor_inicial,
+    )
+    assert rangos["masa_kg"].contiene(masa_kg)
+
+
+def test_masa_amortiguamiento_critico_rechaza_distancia_no_positiva():
+    with pytest.raises(ParametroInvalidoError):
+        calcular_masa_amortiguamiento_critico(0.0, 2.0)
 
 
 # --- Clasificación de la respuesta ----------------------------------------

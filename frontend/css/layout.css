@@ -17,24 +17,27 @@
          .fila-grafica            (tarjeta--visual: gráfica de ángulo, ancho completo)
        .pie                       (créditos, enlace al taller)
 
-   .pagina ocupa exactamente el alto de la ventana y no se desborda: así solo
-   .columna-controles y .columna-resultados necesitan su propia barra de
-   scroll cuando su contenido no cabe, sin recurrir a un alto fijo calculado
-   a mano (evita "números mágicos" que se desactualizan si el encabezado
-   cambia de tamaño). */
+   Las tres columnas de .fila-principal se estiran a la misma altura con el
+   "stretch" nativo de CSS Grid (el valor por defecto de align-items): la
+   fila crece tanto como necesite su columna más alta (normalmente Controles
+   o Resultados), y la palanca se estira para acompañarla. Así ninguna
+   columna necesita su propia barra de scroll; si el contenido total no cabe
+   en la ventana, la página completa se desplaza, como cualquier página
+   normal. */
 
 /* --- Página completa ---------------------------------------------------------- */
 .pagina {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 /* --- Encabezado ------------------------------------------------------------------
-   Tres grupos: título+descripción, indicador de conexión y acciones (Perturbar,
-   Reiniciar). space-between los reparte a lo ancho; flex-wrap permite que se
-   acomoden en varias líneas en pantallas angostas sin romper el diseño. */
+   Dos grupos: título+descripción a la izquierda, y a la derecha el indicador
+   de conexión junto con las acciones (Perturbar, Reiniciar), todo agrupado
+   dentro de .encabezado__acciones. space-between los separa a los extremos;
+   flex-wrap permite que se acomoden en varias líneas en pantallas angostas
+   sin romper el diseño. */
 .encabezado {
   display: flex;
   justify-content: space-between;
@@ -59,8 +62,6 @@
    gráfica a todo el ancho. Sin max-width: se usa el ancho completo de la
    ventana, con el mismo padding lateral que el encabezado. */
 .contenido {
-  flex: 1;
-  min-height: 0;
   width: 100%;
   padding: 0 var(--espacio-lg) var(--espacio-xl);
 
@@ -70,55 +71,27 @@
 }
 
 /* --- Fila principal: palanca (el doble de ancho) | controles | resultados --------
-   flex: 2 (contra el flex: 1 de .fila-grafica) reparte el alto disponible en
-   tercios: dos para esta fila, uno para la gráfica. align-items: start evita
-   que las columnas se estiren solas: cada una fija su propio alto (100%)
-   para controlar el scroll de forma independiente. */
+   align-items no se declara: se usa el "stretch" por defecto de CSS Grid,
+   así las tres columnas quedan siempre a la misma altura, la de la columna
+   con más contenido (normalmente Controles o Resultados). */
 .fila-principal {
-  flex: 2;
-  min-height: 0;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: var(--espacio-md);
-  align-items: start;
 }
 
 @media (max-width: 1200px) {
-  .pagina {
-    height: auto;
-    overflow: visible;
-  }
-
-  .contenido {
-    height: auto;
-  }
-
   .fila-principal {
     grid-template-columns: 1fr;
-    flex: none;
   }
 
-  .columna-palanca,
-  .columna-controles,
-  .columna-resultados {
-    height: auto;
-    overflow: visible;
-  }
-
-  .fila-grafica {
-    flex: none;
-  }
-
-  /* Apiladas, .columna-palanca y .fila-grafica ya no tienen un alto fijo del
-     que el canvas (flex: 1) pueda tomar su tamaño: se le da un alto propio
-     mediante aspect-ratio, para que no quede diminuto (el tamaño mínimo por
-     defecto de un <canvas>). */
-  .columna-palanca canvas,
-  .fila-grafica canvas {
-    flex: none;
-  }
-
+  /* Apilada, .columna-palanca queda sola en su propia fila de la cuadrícula:
+     ya no hay una columna vecina más alta de la que "heredar" altura por
+     stretch. Se le da un alto propio con aspect-ratio, igual que ya tiene
+     .fila-grafica, para que el canvas no quede diminuto (el tamaño mínimo
+     por defecto de un <canvas>). */
   .columna-palanca canvas {
+    flex: none;
     aspect-ratio: 16 / 9;
   }
 
@@ -129,43 +102,47 @@
 
 /* --- Columna de la palanca: tarjeta visual dentro de la fila principal ----------- */
 .columna-palanca {
-  height: 100%;
   min-width: 0; /* evita que el canvas empuje la cuadrícula a desbordarse */
 }
 
 /* --- Columnas de controles y resultados -------------------------------------------
-   Usan la misma referencia de alto (100%) que .columna-palanca para que las
-   tres columnas se vean parejas; si su tarjeta no cabe, solo esa columna
-   hace scroll. */
+   Cada una envuelve su tarjeta ("Controles" / "Resultados"); el stretch de
+   .fila-principal ya las iguala en alto, sin necesitar scroll propio. */
 .columna-controles,
 .columna-resultados {
   display: flex;
   flex-direction: column;
-  height: 100%;
   min-width: 0;
-  overflow-y: auto;
 }
 
 /* --- Tarjeta visual: dibujo de la palanca o gráfica de ángulo ---------------------
    Común a .columna-palanca y .fila-grafica (ambas llevan la clase
    .tarjeta--visual): título y leyenda con su alto natural, canvas ocupando
-   el resto (flex: 1). */
+   el resto. */
 .tarjeta--visual {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
+/* El canvas de la palanca vive en una columna con altura real (la que le da
+   el stretch de .fila-principal), así que flex: 1 puede repartírsela. El de
+   la gráfica es una tarjeta suelta a todo lo ancho, sin esa referencia de
+   alto: usa aspect-ratio para tener un alto propio en vez de depender de un
+   contenedor que no lo tiene. */
 .tarjeta--visual canvas {
   width: 100%;
   flex: 1;
   min-height: 0;
 }
 
-/* --- Fila de la gráfica: ancho completo, un tercio del alto de la fila principal - */
+.fila-grafica canvas {
+  flex: none;
+  aspect-ratio: 21 / 5;
+}
+
+/* --- Fila de la gráfica: ancho completo ------------------------------------------- */
 .fila-grafica {
-  flex: 1;
-  min-height: 0;
   width: 100%;
 }
 
@@ -191,6 +168,14 @@
 
 .fila--envuelve {
   flex-wrap: wrap;
+}
+
+/* --- Presets de amortiguamiento: botones junto a la gráfica de ángulo -------------- */
+.presets-amortiguamiento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm);
+  margin-bottom: var(--espacio-md);
 }
 
 /* --- Cuadrícula de resultados: dos columnas de valor + etiqueta -------------------- */

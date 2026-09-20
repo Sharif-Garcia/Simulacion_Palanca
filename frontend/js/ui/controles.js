@@ -7,6 +7,10 @@
  *      los sliders del HTML, para no repetir esos números aquí (DRY).
  *   2. Mostrar el valor actual de cada slider mientras se mueve.
  *   3. Enviar cada cambio al servidor por el WebSocket.
+ *   4. Aplicar los presets de amortiguamiento (botones junto a la gráfica):
+ *      los valores ya vienen calculados en presets_amortiguamiento, esta
+ *      capa solo los copia a los sliders y los envía como cualquier otro
+ *      cambio (no calcula ni conoce ningún número propio).
  *
  * No dibuja el resultado ni el estado: eso lo hace panelResultados.js al
  * recibir los mensajes de vuelta.
@@ -34,6 +38,9 @@ const IDS_SLIDERS = Object.freeze({
 const ID_SELECTOR_GRAVEDAD = "selector-gravedad";
 const ID_BOTON_PERTURBAR = "boton-perturbar";
 const ID_BOTON_REINICIAR = "boton-reiniciar";
+// Cada botón de preset trae en data-preset la clave que usar en
+// presets_amortiguamiento (coincide con TipoRespuesta en el backend).
+const SELECTOR_BOTONES_PRESET = "[data-preset]";
 
 export class Controles {
   /**
@@ -45,6 +52,7 @@ export class Controles {
     this._selectorGravedad = document.getElementById(ID_SELECTOR_GRAVEDAD);
     this._botonPerturbar = document.getElementById(ID_BOTON_PERTURBAR);
     this._botonReiniciar = document.getElementById(ID_BOTON_REINICIAR);
+    this._botonesPreset = document.querySelectorAll(SELECTOR_BOTONES_PRESET);
   }
 
   /**
@@ -141,6 +149,32 @@ export class Controles {
     this._botonReiniciar.addEventListener("click", () => {
       this._cliente.enviar({ tipo: TIPO_MENSAJE_SALIENTE.REINICIAR });
     });
+
+    for (const boton of this._botonesPreset) {
+      boton.addEventListener("click", () =>
+        this._aplicarPreset(boton.dataset.preset),
+      );
+    }
+  }
+
+  /**
+   * Copia un preset de presets_amortiguamiento a los sliders y lo envía,
+   * exactamente como si la persona hubiera movido cada control a mano.
+   */
+  _aplicarPreset(nombrePreset) {
+    const preset = this._configuracion.presets_amortiguamiento?.[nombrePreset];
+    if (!preset) {
+      console.warn(`El backend no envió el preset '${nombrePreset}'`);
+      return;
+    }
+
+    for (const nombreParametro of Object.keys(this._elementosSlider)) {
+      this._elementosSlider[nombreParametro].control.value =
+        preset[nombreParametro];
+      this._actualizarTextoValor(nombreParametro);
+    }
+    this._selectorGravedad.value = preset.nombre_gravedad;
+    this._enviarParametros();
   }
 
   _actualizarTextoValor(nombreParametro) {

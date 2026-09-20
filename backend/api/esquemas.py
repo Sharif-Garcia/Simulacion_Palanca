@@ -24,6 +24,8 @@ from enum import Enum
 from types import MappingProxyType
 
 from backend import configuracion
+from backend.dominio.dinamica import calcular_masa_amortiguamiento_critico
+from backend.dominio.estatica import calcular_fuerza_equilibrio_n, calcular_peso_n
 from backend.dominio.excepciones import (
     MensajeMalformadoError,
     PalancaError,
@@ -35,6 +37,7 @@ from backend.dominio.modelos import (
     ParametrosPalanca,
     ResultadosDinamicos,
     ResultadosEstaticos,
+    TipoRespuesta,
 )
 from backend.dominio.validadores import convertir_a_numero_finito, validar_parametros
 
@@ -221,6 +224,57 @@ def a_json(mensaje: Mapping[str, object]) -> str:
         raise SimulacionInestableError("un valor no finito no se puede enviar al cliente") from None
 
 
+def _construir_preset_amortiguamiento(
+    masa_kg: float,
+    distancia_carga_m: float,
+    distancia_esfuerzo_m: float,
+    nombre_gravedad: str,
+) -> dict[str, object]:
+    """Arma un preset con la fuerza que deja la palanca en equilibrio (torque neto cero).
+
+    Así, al aplicar el preset, la barra parte del equilibrio y un "Perturbar"
+    muestra la respuesta pura del amortiguamiento (ζ), sin una tendencia de
+    fondo hacia otro ángulo. Las claves coinciden con ParametrosPalanca, listas
+    para llenar los sliders o enviarse tal cual como mensaje "parametros".
+    """
+    peso_n = calcular_peso_n(masa_kg, configuracion.GRAVEDADES_M_S2[nombre_gravedad])
+    return {
+        "masa_kg": masa_kg,
+        "distancia_carga_m": distancia_carga_m,
+        "distancia_esfuerzo_m": distancia_esfuerzo_m,
+        "fuerza_n": calcular_fuerza_equilibrio_n(peso_n, distancia_carga_m, distancia_esfuerzo_m),
+        "nombre_gravedad": nombre_gravedad,
+    }
+
+
+def _construir_presets_amortiguamiento() -> dict[str, object]:
+    """Un preset completo por tipo de respuesta (ζ < 1, ζ = 1, ζ > 1).
+
+    Las distancias quedan fijas en su valor inicial (configuracion.py) y solo
+    cambia la masa: menos masa reduce la inercia y sube ζ (sobreamortiguada);
+    más masa la sube y baja ζ (subamortiguada). Ningún número se escribe a
+    mano: los extremos salen de RANGOS_PARAMETROS y el valor crítico se
+    despeja con calcular_masa_amortiguamiento_critico().
+    """
+    rangos = configuracion.RANGOS_PARAMETROS
+    distancia_carga_m = rangos["distancia_carga_m"].valor_inicial
+    distancia_esfuerzo_m = rangos["distancia_esfuerzo_m"].valor_inicial
+    nombre_gravedad = configuracion.GRAVEDAD_INICIAL
+
+    def preset(masa_kg: float) -> dict[str, object]:
+        return _construir_preset_amortiguamiento(
+            masa_kg, distancia_carga_m, distancia_esfuerzo_m, nombre_gravedad
+        )
+
+    return {
+        TipoRespuesta.SOBREAMORTIGUADA.value: preset(rangos["masa_kg"].minimo),
+        TipoRespuesta.CRITICA.value: preset(
+            calcular_masa_amortiguamiento_critico(distancia_carga_m, distancia_esfuerzo_m)
+        ),
+        TipoRespuesta.SUBAMORTIGUADA.value: preset(rangos["masa_kg"].maximo),
+    }
+
+
 def construir_configuracion_cliente() -> dict[str, object]:
     """Datos que el navegador necesita para armar sus controles (ruta GET /api/configuracion).
 
@@ -234,4 +288,5 @@ def construir_configuracion_cliente() -> dict[str, object]:
         "gravedad_inicial": configuracion.GRAVEDAD_INICIAL,
         "limite_angulo_grados": configuracion.LIMITE_ANGULO_GRADOS,
         "frecuencia_cuadros_hz": configuracion.FRECUENCIA_CUADROS_HZ,
+        "presets_amortiguamiento": _construir_presets_amortiguamiento(),
     }
