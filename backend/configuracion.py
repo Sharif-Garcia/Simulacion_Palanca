@@ -7,14 +7,17 @@ porque son más legibles para las personas. Las capas de física los convierten
 a radianes internamente.
 """
 
+import os
 from dataclasses import dataclass
 from types import MappingProxyType
 
 # ---------------------------------------------------------------------------
 # Servidor
 # ---------------------------------------------------------------------------
-HOST_SERVIDOR = "127.0.0.1"
-PUERTO_SERVIDOR = 8000
+# Railway (y despliegues similares) inyectan PORT automáticamente; HOST se
+# puede fijar por variable de entorno para no romper el valor local por defecto.
+HOST_SERVIDOR = os.environ.get("HOST", "127.0.0.1")
+PUERTO_SERVIDOR = int(os.environ.get("PORT", 8000))
 NIVEL_REGISTRO = "INFO"
 
 # ---------------------------------------------------------------------------
