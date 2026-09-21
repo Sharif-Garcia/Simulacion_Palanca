@@ -43,6 +43,12 @@ class ParametrosPalanca:
 
     Se guarda el NOMBRE de la gravedad ("Tierra", "Luna", "Marte") y no el
     número, para que la tabla de gravedades viva solo en configuracion.py.
+    Lo mismo para el género de la palanca ("primer_genero", etc.): se guarda
+    el nombre, no el objeto GeneroPalanca. A diferencia de gravedad_m_s2, acá
+    NO hay una property que lo resuelva: estatica.py (donde vive
+    GENEROS_DISPONIBLES) ya importa de este módulo, así que resolverlo aquí
+    crearía un import circular. Quien necesite el objeto GeneroPalanca lo
+    resuelve él mismo (ver Simulador._construir_configuracion).
     """
 
     masa_kg: float
@@ -50,6 +56,7 @@ class ParametrosPalanca:
     distancia_esfuerzo_m: float
     fuerza_n: float
     nombre_gravedad: str
+    nombre_genero: str
 
     @property
     def gravedad_m_s2(self) -> float:
@@ -73,6 +80,7 @@ class ParametrosPalanca:
             distancia_esfuerzo_m=rangos["distancia_esfuerzo_m"].valor_inicial,
             fuerza_n=rangos["fuerza_n"].valor_inicial,
             nombre_gravedad=configuracion.GRAVEDAD_INICIAL,
+            nombre_genero=configuracion.GENERO_INICIAL,
         )
 
 

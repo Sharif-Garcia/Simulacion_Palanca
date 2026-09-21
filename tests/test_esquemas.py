@@ -49,6 +49,7 @@ def test_interpreta_mensaje_de_parametros():
         distancia_esfuerzo_m=2.0,
         fuerza_n=122.6,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
 
 
@@ -111,6 +112,31 @@ def test_rechaza_nan_en_los_parametros():
     texto = _texto(tipo="parametros", parametros={**PARAMETROS_VALIDOS, "masa_kg": float("nan")})
     with pytest.raises(ParametroInvalidoError):
         interpretar_mensaje(texto)
+
+
+# --- Género de la palanca ------------------------------------------------------------
+def test_nombre_genero_usa_primer_genero_si_falta():
+    # PARAMETROS_VALIDOS no trae nombre_genero: un cliente sin selector de
+    # género todavía no debe romperse, debe caer en el género inicial.
+    mensaje = interpretar_mensaje(_texto(tipo="parametros", parametros=PARAMETROS_VALIDOS))
+    assert mensaje.parametros.nombre_genero == "primer_genero"
+
+
+def test_nombre_genero_se_puede_elegir_explicitamente():
+    texto = _texto(
+        tipo="parametros", parametros={**PARAMETROS_VALIDOS, "nombre_genero": "segundo_genero"}
+    )
+    mensaje = interpretar_mensaje(texto)
+    assert mensaje.parametros.nombre_genero == "segundo_genero"
+
+
+def test_nombre_genero_desconocido_se_rechaza():
+    texto = _texto(
+        tipo="parametros", parametros={**PARAMETROS_VALIDOS, "nombre_genero": "cuarto_genero"}
+    )
+    with pytest.raises(ParametroInvalidoError) as informacion:
+        interpretar_mensaje(texto)
+    assert informacion.value.nombre_parametro == "nombre_genero"
 
 
 @pytest.mark.parametrize(
@@ -190,6 +216,12 @@ def test_configuracion_cliente_expone_lo_de_configuracion_py():
     assert resultado["amortiguamiento_n_m_s_rad"] == configuracion.AMORTIGUAMIENTO_N_M_S_RAD
     assert resultado["masa_barra_kg"] == configuracion.MASA_BARRA_KG
     assert resultado["tolerancia_equilibrio_n_m"] == configuracion.TOLERANCIA_EQUILIBRIO_N_M
+    assert resultado["generos_disponibles"] == {
+        "primer_genero": "Primer género",
+        "segundo_genero": "Segundo género",
+        "tercer_genero": "Tercer género",
+    }
+    assert resultado["genero_inicial"] == "primer_genero"
 
 
 def test_configuracion_cliente_es_json_valido():

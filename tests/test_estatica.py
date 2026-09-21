@@ -10,8 +10,12 @@ import pytest
 from backend.dominio.estatica import (
     GENEROS_DISPONIBLES,
     PRIMER_GENERO,
+    SEGUNDO_GENERO,
+    TERCER_GENERO,
     GeneroPalanca,
     PrimerGenero,
+    SegundoGenero,
+    TercerGenero,
     calcular_fuerza_equilibrio_n,
     calcular_peso_n,
     calcular_torque_neto_n_m,
@@ -34,6 +38,7 @@ def parametros_ejemplo() -> ParametrosPalanca:
         distancia_esfuerzo_m=2.0,
         fuerza_n=FUERZA_EQUILIBRIO_EJEMPLO_N,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
 
 
@@ -110,3 +115,34 @@ def test_genero_abstracto_no_se_puede_instanciar():
 
 def test_registro_contiene_el_primer_genero():
     assert isinstance(GENEROS_DISPONIBLES["primer_genero"], PrimerGenero)
+
+
+# --- Segundo y tercer género ---------------------------------------------------------
+def test_registro_contiene_los_tres_generos():
+    assert isinstance(GENEROS_DISPONIBLES["segundo_genero"], SegundoGenero)
+    assert isinstance(GENEROS_DISPONIBLES["tercer_genero"], TercerGenero)
+
+
+@pytest.mark.parametrize("genero", [SEGUNDO_GENERO, TERCER_GENERO])
+def test_segundo_y_tercer_genero_calculan_el_mismo_torque_que_el_primero(genero):
+    # Misma fórmula de momentos que el primer género (ver docstrings): lo que
+    # cambia entre géneros es la reacción del fulcro, no el torque neto.
+    esperado = PRIMER_GENERO.torque_neto_n_m(
+        PESO_EJEMPLO_N, FUERZA_EQUILIBRIO_EJEMPLO_N, 0.5, 2.0
+    )
+    torque = genero.torque_neto_n_m(PESO_EJEMPLO_N, FUERZA_EQUILIBRIO_EJEMPLO_N, 0.5, 2.0)
+    assert torque == pytest.approx(esperado)
+
+
+@pytest.mark.parametrize("genero", [SEGUNDO_GENERO, TERCER_GENERO])
+def test_segundo_y_tercer_genero_reaccion_es_peso_menos_esfuerzo(genero):
+    # A diferencia del primer género (R = F + W), acá el esfuerzo va hacia
+    # arriba y el peso hacia abajo: la reacción solo cubre la diferencia.
+    reaccion = genero.reaccion_fulcro_n(PESO_EJEMPLO_N, FUERZA_EQUILIBRIO_EJEMPLO_N)
+    assert reaccion == pytest.approx(PESO_EJEMPLO_N - FUERZA_EQUILIBRIO_EJEMPLO_N)
+
+
+def test_nombres_legibles_de_los_tres_generos():
+    assert PRIMER_GENERO.nombre == "Primer género"
+    assert SEGUNDO_GENERO.nombre == "Segundo género"
+    assert TERCER_GENERO.nombre == "Tercer género"

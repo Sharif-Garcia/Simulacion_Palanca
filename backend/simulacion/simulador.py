@@ -21,7 +21,7 @@ from dataclasses import dataclass, replace
 
 from backend import configuracion
 from backend.dominio.dinamica import ModeloDinamico, resolver_dinamica
-from backend.dominio.estatica import PRIMER_GENERO, GeneroPalanca, resolver_estatica
+from backend.dominio.estatica import GENEROS_DISPONIBLES, resolver_estatica
 from backend.dominio.excepciones import ParametroInvalidoError
 from backend.dominio.modelos import (
     EstadoSimulacion,
@@ -88,13 +88,11 @@ class Simulador:
         integrador: Integrador,
         parametros: ParametrosPalanca,
         *,
-        genero: GeneroPalanca = PRIMER_GENERO,
         duracion_cuadro_s: float = DURACION_CUADRO_S,
         limite_angulo_rad: float = LIMITE_ANGULO_RAD,
         impulso_perturbacion_rad_s: float = configuracion.IMPULSO_PERTURBACION_RAD_S,
     ) -> None:
         self._integrador = integrador
-        self._genero = genero
         self._duracion_cuadro_s = exigir_positivo("duracion_cuadro_s", duracion_cuadro_s)
         self._limite_angulo_rad = exigir_positivo("limite_angulo_rad", limite_angulo_rad)
         self._impulso_rad_s = exigir_positivo("impulso_perturbacion_rad_s", impulso_perturbacion_rad_s)
@@ -173,9 +171,18 @@ class Simulador:
     # --- Internos ----------------------------------------------------------
     def _construir_configuracion(self, parametros: ParametrosPalanca) -> _Configuracion:
         """Calcula todo lo que depende de los parámetros (puede lanzar ParametroInvalidoError)."""
-        resultados_estaticos = resolver_estatica(parametros, self._genero)
-        modelo = ModeloDinamico.desde_parametros(parametros, self._genero)
-        resultados_dinamicos = resolver_dinamica(parametros, self._genero)
+        try:
+            genero = GENEROS_DISPONIBLES[parametros.nombre_genero]
+        except KeyError:
+            raise ParametroInvalidoError(
+                "nombre_genero",
+                parametros.nombre_genero,
+                f"debe ser uno de {list(GENEROS_DISPONIBLES)}",
+            ) from None
+
+        resultados_estaticos = resolver_estatica(parametros, genero)
+        modelo = ModeloDinamico.desde_parametros(parametros, genero)
+        resultados_dinamicos = resolver_dinamica(parametros, genero)
         subpasos = self._calcular_subpasos(modelo)
         return _Configuracion(
             parametros=parametros,

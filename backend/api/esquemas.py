@@ -25,7 +25,11 @@ from types import MappingProxyType
 
 from backend import configuracion
 from backend.dominio.dinamica import calcular_masa_amortiguamiento_critico
-from backend.dominio.estatica import calcular_fuerza_equilibrio_n, calcular_peso_n
+from backend.dominio.estatica import (
+    GENEROS_DISPONIBLES,
+    calcular_fuerza_equilibrio_n,
+    calcular_peso_n,
+)
 from backend.dominio.excepciones import (
     MensajeMalformadoError,
     PalancaError,
@@ -236,6 +240,10 @@ def _construir_preset_amortiguamiento(
     muestra la respuesta pura del amortiguamiento (ζ), sin una tendencia de
     fondo hacia otro ángulo. Las claves coinciden con ParametrosPalanca, listas
     para llenar los sliders o enviarse tal cual como mensaje "parametros".
+
+    Los presets siempre son de primer género: son una demostración del
+    amortiguamiento (ζ), no del género de la palanca, y calcular_fuerza_equilibrio_n
+    ya asume primer género por defecto.
     """
     peso_n = calcular_peso_n(masa_kg, configuracion.GRAVEDADES_M_S2[nombre_gravedad])
     return {
@@ -244,6 +252,7 @@ def _construir_preset_amortiguamiento(
         "distancia_esfuerzo_m": distancia_esfuerzo_m,
         "fuerza_n": calcular_fuerza_equilibrio_n(peso_n, distancia_carga_m, distancia_esfuerzo_m),
         "nombre_gravedad": nombre_gravedad,
+        "nombre_genero": configuracion.GENERO_INICIAL,
     }
 
 
@@ -286,6 +295,10 @@ def construir_configuracion_cliente() -> dict[str, object]:
         },
         "gravedades_m_s2": dict(configuracion.GRAVEDADES_M_S2),
         "gravedad_inicial": configuracion.GRAVEDAD_INICIAL,
+        "generos_disponibles": {
+            clave: genero.nombre for clave, genero in GENEROS_DISPONIBLES.items()
+        },
+        "genero_inicial": configuracion.GENERO_INICIAL,
         "limite_angulo_grados": configuracion.LIMITE_ANGULO_GRADOS,
         "frecuencia_cuadros_hz": configuracion.FRECUENCIA_CUADROS_HZ,
         "presets_amortiguamiento": _construir_presets_amortiguamiento(),

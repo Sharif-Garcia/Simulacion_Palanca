@@ -20,8 +20,9 @@ from backend.configuracion import RangoParametro
 from backend.dominio.excepciones import ParametroInvalidoError
 from backend.dominio.modelos import ParametrosPalanca
 
-# Clave del parámetro que no es numérico (se elige por nombre, no por rango).
+# Claves de los parámetros que no son numéricos (se eligen por nombre, no por rango).
 CLAVE_GRAVEDAD = "nombre_gravedad"
+CLAVE_GENERO = "nombre_genero"
 
 
 def convertir_a_numero_finito(nombre: str, valor: object) -> float:
@@ -69,6 +70,26 @@ def validar_nombre_gravedad(valor: object) -> str:
     return valor
 
 
+def validar_nombre_genero(valor: object) -> str:
+    """Valida que el género elegido exista en el registro de estatica.py.
+
+    Import diferido (dentro de la función, no al nivel del módulo): estatica.py
+    importa exigir_positivo de este mismo módulo, así que un import de
+    estatica.py aquí arriba crearía un ciclo. Para cuando esta función se
+    LLAMA (en tiempo de ejecución, con los dos módulos ya cargados), el ciclo
+    ya no es un problema.
+    """
+    from backend.dominio.estatica import GENEROS_DISPONIBLES
+
+    if not isinstance(valor, str) or valor not in GENEROS_DISPONIBLES:
+        raise ParametroInvalidoError(
+            CLAVE_GENERO,
+            valor,
+            f"debe ser uno de {list(GENEROS_DISPONIBLES)}",
+        )
+    return valor
+
+
 def validar_parametros(datos: Mapping[str, object]) -> ParametrosPalanca:
     """Valida un diccionario de datos crudos y devuelve ParametrosPalanca.
 
@@ -92,7 +113,14 @@ def validar_parametros(datos: Mapping[str, object]) -> ParametrosPalanca:
         raise ParametroInvalidoError(CLAVE_GRAVEDAD, None, "es obligatorio")
     nombre_gravedad = validar_nombre_gravedad(datos[CLAVE_GRAVEDAD])
 
-    return ParametrosPalanca(**valores_numericos, nombre_gravedad=nombre_gravedad)
+    # A diferencia de la gravedad, el género es opcional: si el mensaje no lo
+    # trae (por ejemplo, un cliente viejo sin selector de género todavía) se
+    # usa el género inicial en vez de rechazar el mensaje.
+    nombre_genero = validar_nombre_genero(datos.get(CLAVE_GENERO, configuracion.GENERO_INICIAL))
+
+    return ParametrosPalanca(
+        **valores_numericos, nombre_gravedad=nombre_gravedad, nombre_genero=nombre_genero
+    )
 
 
 def exigir_positivo(nombre: str, valor: float) -> float:

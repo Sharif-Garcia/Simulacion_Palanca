@@ -31,6 +31,12 @@ GRAVEDADES_M_S2 = MappingProxyType(
 GRAVEDAD_INICIAL = "Tierra"
 
 # ---------------------------------------------------------------------------
+# Física: género de la palanca
+# ---------------------------------------------------------------------------
+# Las claves coinciden con GENEROS_DISPONIBLES en backend/dominio/estatica.py.
+GENERO_INICIAL = "primer_genero"
+
+# ---------------------------------------------------------------------------
 # Física: constantes internas del modelo 
 # ---------------------------------------------------------------------------
 ANGULO_INICIAL_GRADOS = 0.0

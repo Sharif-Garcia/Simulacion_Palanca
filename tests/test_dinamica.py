@@ -37,6 +37,7 @@ def parametros_ejemplo() -> ParametrosPalanca:
         distancia_esfuerzo_m=2.0,
         fuerza_n=122.625,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
 
 
@@ -227,6 +228,7 @@ def test_extremo_ligero_es_sobreamortiguado():
         distancia_esfuerzo_m=0.1,
         fuerza_n=0.0,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
     assert resolver_dinamica(parametros).tipo_respuesta is TipoRespuesta.SOBREAMORTIGUADA
 
@@ -238,6 +240,7 @@ def test_extremo_pesado_es_subamortiguado():
         distancia_esfuerzo_m=5.0,
         fuerza_n=1000.0,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
     assert resolver_dinamica(parametros).tipo_respuesta is TipoRespuesta.SUBAMORTIGUADA
 
@@ -258,6 +261,7 @@ def test_rapidez_maxima_del_extremo_ligero():
         distancia_esfuerzo_m=0.1,
         fuerza_n=0.0,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
     modelo = ModeloDinamico.desde_parametros(parametros)
     # Polo rápido de s² + 6562.5·s + 37500 = 0: aproximadamente 6556.78 rad/s.

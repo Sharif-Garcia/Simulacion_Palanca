@@ -52,6 +52,7 @@ def parametros_base() -> ParametrosPalanca:
         distancia_esfuerzo_m=2.0,
         fuerza_n=122.625,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
 
 
@@ -157,6 +158,7 @@ def test_tope_inferior_se_alcanza_con_carga_pesada():
         distancia_esfuerzo_m=5.0,
         fuerza_n=0.0,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
     simulador = Simulador(IntegradorRungeKutta4(), parametros)
     estado = _simular_segundos(simulador, 5.0)
@@ -254,6 +256,29 @@ def test_parametros_invalidos_no_alteran_el_simulador(parametros_base):
     assert simulador.subpasos_por_cuadro == subpasos_antes
 
 
+# --- Género de la palanca -----------------------------------------------------------
+def test_cambiar_de_genero_cambia_la_reaccion_del_fulcro(parametros_base):
+    # Primer género: R = F + W = 122.625 + 490.5 = 613.125
+    # Segundo/tercer género: R = W - F = 490.5 - 122.625 = 367.875
+    simulador = Simulador(IntegradorRungeKutta4(), parametros_base)
+    assert simulador.resultados_estaticos.reaccion_fulcro_n == pytest.approx(613.125)
+
+    simulador.actualizar_parametros(replace(parametros_base, nombre_genero="segundo_genero"))
+    assert simulador.resultados_estaticos.reaccion_fulcro_n == pytest.approx(367.875)
+
+    simulador.actualizar_parametros(replace(parametros_base, nombre_genero="tercer_genero"))
+    assert simulador.resultados_estaticos.reaccion_fulcro_n == pytest.approx(367.875)
+
+
+def test_genero_desconocido_es_rechazado_y_no_altera_el_simulador(parametros_base):
+    simulador = Simulador(IntegradorRungeKutta4(), parametros_base)
+
+    with pytest.raises(ParametroInvalidoError):
+        simulador.actualizar_parametros(replace(parametros_base, nombre_genero="cuarto_genero"))
+
+    assert simulador.parametros == parametros_base
+
+
 @pytest.mark.parametrize("duracion_invalida", [0.0, -1.0])
 def test_constructor_rechaza_duracion_de_cuadro_invalida(parametros_base, duracion_invalida):
     with pytest.raises(ParametroInvalidoError):
@@ -273,6 +298,7 @@ def test_barra_ligera_usa_mas_subpasos_y_se_mantiene_estable():
         distancia_esfuerzo_m=0.1,
         fuerza_n=0.0,
         nombre_gravedad="Tierra",
+        nombre_genero="primer_genero",
     )
     simulador = Simulador(IntegradorRungeKutta4(), ligeros)
     assert simulador.subpasos_por_cuadro > configuracion.SUBPASOS_POR_CUADRO

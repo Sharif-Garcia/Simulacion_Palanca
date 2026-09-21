@@ -73,10 +73,76 @@ class PrimerGenero(GeneroPalanca):
 
 PRIMER_GENERO = PrimerGenero()
 
+
+class SegundoGenero(GeneroPalanca):
+    """La carga queda entre el fulcro y el esfuerzo (carretilla, cascanueces).
+
+    El esfuerzo (hacia arriba, para levantar) y el peso (hacia abajo) actúan
+    del mismo lado del fulcro, pero en sentidos opuestos. Igual que en el
+    primer género, esa oposición de sentidos hace que sus momentos respecto
+    al fulcro tengan signos contrarios:
+        ΣM_O = F·d_e - W·d_r
+    Lo que cambia es el equilibrio vertical: como F apunta hacia arriba y W
+    hacia abajo (no las dos hacia abajo, como en el primer género), la
+    reacción del fulcro solo debe cubrir la diferencia:
+        ΣF_y = 0  =>  R = W - F
+    """
+
+    @property
+    def nombre(self) -> str:
+        return "Segundo género"
+
+    def momento_esfuerzo_n_m(self, fuerza_n: float, distancia_esfuerzo_m: float) -> float:
+        return fuerza_n * distancia_esfuerzo_m
+
+    def momento_carga_n_m(self, peso_n: float, distancia_carga_m: float) -> float:
+        return -peso_n * distancia_carga_m
+
+    def reaccion_fulcro_n(self, peso_n: float, fuerza_n: float) -> float:
+        return peso_n - fuerza_n
+
+
+SEGUNDO_GENERO = SegundoGenero()
+
+
+class TercerGenero(GeneroPalanca):
+    """El esfuerzo queda entre el fulcro y la carga (pinzas, antebrazo, caña de pescar).
+
+    Misma disposición de fuerzas que el segundo género (esfuerzo hacia
+    arriba, peso hacia abajo, del mismo lado del fulcro), así que el
+    equilibrio de momentos y de fuerzas verticales son iguales:
+        ΣM_O = F·d_e - W·d_r
+        ΣF_y = 0  =>  R = W - F
+    Lo que distingue al tercer género es cuál brazo suele ser más corto: al
+    quedar el esfuerzo más cerca del fulcro que la carga, la ventaja
+    mecánica (MA = d_e / d_r) típicamente da menor que 1, en vez de mayor
+    (una desventaja mecánica a cambio de más recorrido en la carga).
+    """
+
+    @property
+    def nombre(self) -> str:
+        return "Tercer género"
+
+    def momento_esfuerzo_n_m(self, fuerza_n: float, distancia_esfuerzo_m: float) -> float:
+        return fuerza_n * distancia_esfuerzo_m
+
+    def momento_carga_n_m(self, peso_n: float, distancia_carga_m: float) -> float:
+        return -peso_n * distancia_carga_m
+
+    def reaccion_fulcro_n(self, peso_n: float, fuerza_n: float) -> float:
+        return peso_n - fuerza_n
+
+
+TERCER_GENERO = TercerGenero()
+
 # Registro de géneros disponibles. Solo lectura, igual que las tablas de configuracion.py.
-GENEROS_DISPONIBLES = MappingProxyType({"primer_genero": PRIMER_GENERO})
-
-
+GENEROS_DISPONIBLES = MappingProxyType(
+    {
+        "primer_genero": PRIMER_GENERO,
+        "segundo_genero": SEGUNDO_GENERO,
+        "tercer_genero": TERCER_GENERO,
+    }
+)
 
 
 def calcular_peso_n(masa_kg: float, gravedad_m_s2: float) -> float:
