@@ -55,6 +55,13 @@
   display: flex;
   gap: var(--espacio-xs);
   align-items: center;
+  flex-wrap: wrap;
+}
+
+/* --- Grupo de género: botones junto al indicador de conexión ---------------------- */
+.grupo-genero {
+  display: flex;
+  gap: var(--espacio-xs);
 }
 
 /* --- Contenido principal: una columna --------------------------------------------

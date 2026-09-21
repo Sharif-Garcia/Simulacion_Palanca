@@ -2,16 +2,23 @@
  * Dibuja la palanca (barra, fulcro, carga y esfuerzo) en un <canvas>,
  * rotando según el ángulo que llega del backend.
  *
- * Convención (igual que backend/dominio/estatica.py, PrimerGenero):
- *   - El esfuerzo queda a la izquierda del fulcro, la carga a la derecha.
- *   - Ángulo positivo: el esfuerzo baja y la carga sube.
+ * Convención de ángulo: positivo => el esfuerzo baja (y lo que esté del otro
+ * lado, sube). Esto no depende del género.
+ *
+ * Convención de lados (ver backend/dominio/estatica.py, GENEROS_DISPONIBLES):
+ *   - Primer género: el fulcro queda ENTRE el esfuerzo y la carga (lados
+ *     opuestos), como un balancín.
+ *   - Segundo y tercer género: el esfuerzo y la carga quedan del MISMO lado
+ *     del fulcro (cuál de los dos brazos es más corto ya lo deciden los
+ *     sliders, no el dibujo: ver GENERO_LADOS_OPUESTOS más abajo).
  *
  * Escala fija, fulcro fijo: la escala (píxeles por metro) se calcula UNA
  * SOLA VEZ a partir de las distancias MÁXIMAS posibles (establecerLimites),
  * no de los valores actuales. Así, mover un slider alarga o acorta el brazo
  * correspondiente sin mover el fulcro ni reescalar el resto del dibujo.
  *
- * No calcula nada de física: solo traduce (ángulo, distancias) a píxeles.
+ * No calcula nada de física: solo traduce (ángulo, distancias, género) a
+ * píxeles.
  */
 
 import { leerTema } from "../utilidades/tema.js";
@@ -22,6 +29,13 @@ const RADIO_FULCRO_PX = 14;
 const RADIO_CARGA_PX = 16;
 const LONGITUD_FLECHA_ESFUERZO_PX = 46;
 const GROSOR_LINEA_GUIA_PX = 1;
+
+// Único género con el esfuerzo y la carga en lados opuestos del fulcro (ver
+// GENEROS_DISPONIBLES en backend/dominio/estatica.py). No es un nombre para
+// mostrar en pantalla (esos vienen de generos_disponibles): es la clave del
+// protocolo que distingue cómo dibujar la barra, igual que este módulo ya
+// distingue mensajes por su "tipo" en vez de adivinarlo.
+const GENERO_LADOS_OPUESTOS = "primer_genero";
 
 export class RenderizadorPalanca {
   /**
@@ -56,8 +70,8 @@ export class RenderizadorPalanca {
   /**
    * Dibuja un cuadro de la palanca.
    * @param {{angulo_rad: number, en_tope: boolean}} estado Del mensaje "estado".
-   * @param {{distancia_carga_m: number, distancia_esfuerzo_m: number}} parametros
-   *   Los valores actuales de los sliders.
+   * @param {{distancia_carga_m: number, distancia_esfuerzo_m: number, nombre_genero: string}} parametros
+   *   Los valores actuales de los sliders (y el género elegido en el selector).
    */
   dibujar(estado, parametros) {
     if (this._pixelesPorMetro === null) {
@@ -73,7 +87,11 @@ export class RenderizadorPalanca {
     ctx.clearRect(0, 0, anchoCss, altoCss);
 
     const geometria = this._calcularGeometria(anchoCss, altoCss, parametros);
-    const puntos = this._calcularPuntosRotados(geometria, estado.angulo_rad);
+    const puntos = this._calcularPuntosRotados(
+      geometria,
+      estado.angulo_rad,
+      parametros.nombre_genero,
+    );
 
     this._dibujarLineaGuia(ctx, anchoCss, geometria);
     this._dibujarBarra(ctx, puntos, estado.en_tope);
@@ -120,21 +138,41 @@ export class RenderizadorPalanca {
   }
 
   /** Rota los extremos de la barra alrededor del fulcro según el ángulo. */
-  _calcularPuntosRotados(geometria, anguloRad) {
+  _calcularPuntosRotados(geometria, anguloRad, nombreGenero) {
     const { fulcro, brazoEsfuerzoPx, brazoCargaPx } = geometria;
     const seno = Math.sin(anguloRad);
     const coseno = Math.cos(anguloRad);
 
-    // Convención: lx negativo (izquierda, esfuerzo), lx positivo (derecha, carga).
+    // Convención: lx negativo (izquierda), lx positivo (derecha).
     // y = fulcro.y - lx * sin(θ): con θ > 0, la izquierda baja y la derecha sube.
     const rotar = (lx) => ({
       x: fulcro.x + lx * coseno,
       y: fulcro.y - lx * seno,
     });
 
+    // Primer género: el esfuerzo va a la izquierda del fulcro (lx negativo) y
+    // la carga a la derecha (lados opuestos). Segundo y tercer género: los
+    // dos van al mismo lado (acá, a la derecha), porque en esos géneros el
+    // fulcro queda en un extremo de la barra, no entre las dos fuerzas.
+    const ladoEsfuerzo = nombreGenero === GENERO_LADOS_OPUESTOS ? -1 : 1;
+    const lxEsfuerzo = ladoEsfuerzo * brazoEsfuerzoPx;
+    const lxCarga = brazoCargaPx;
+
+    // La barra en sí (la línea que se dibuja) no siempre va de esfuerzo a
+    // carga: en el primer género el fulcro (lx = 0) queda entre los dos, así
+    // que sigue siendo así; pero en el segundo y el tercero el fulcro es una
+    // PUNTA de la barra (los dos quedan del mismo lado), así que la barra
+    // debe llegar hasta el fulcro aunque ninguna fuerza esté ahí, o se vería
+    // flotando sin tocarlo. Por eso siempre se incluye 0 (el fulcro) al
+    // buscar los dos extremos de la barra.
+    const lxExtremoA = Math.min(lxEsfuerzo, lxCarga, 0);
+    const lxExtremoB = Math.max(lxEsfuerzo, lxCarga, 0);
+
     return {
-      esfuerzo: rotar(-brazoEsfuerzoPx),
-      carga: rotar(brazoCargaPx),
+      esfuerzo: rotar(lxEsfuerzo),
+      carga: rotar(lxCarga),
+      barraInicio: rotar(lxExtremoA),
+      barraFin: rotar(lxExtremoB),
     };
   }
 
@@ -158,8 +196,8 @@ export class RenderizadorPalanca {
     ctx.lineWidth = GROSOR_BARRA_PX;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(puntos.esfuerzo.x, puntos.esfuerzo.y);
-    ctx.lineTo(puntos.carga.x, puntos.carga.y);
+    ctx.moveTo(puntos.barraInicio.x, puntos.barraInicio.y);
+    ctx.lineTo(puntos.barraFin.x, puntos.barraFin.y);
     ctx.stroke();
     ctx.restore();
   }

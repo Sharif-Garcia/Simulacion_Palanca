@@ -1,6 +1,6 @@
 /**
  * Controles del usuario: sliders de masa, distancias, fuerza, selector de
- * gravedad y botones de perturbar/reiniciar.
+ * gravedad, botones de género y botones de perturbar/reiniciar.
  *
  * Responsabilidades:
  *   1. Pedir los rangos al backend (GET /api/configuracion) y aplicarlos a
@@ -11,9 +11,15 @@
  *      los valores ya vienen calculados en presets_amortiguamiento, esta
  *      capa solo los copia a los sliders y los envía como cualquier otro
  *      cambio (no calcula ni conoce ningún número propio).
+ *   5. Crear los botones de género a partir de generos_disponibles (nombres
+ *      legibles incluidos): ni el HTML ni este módulo hardcodean "Primer
+ *      género", etc. Como no son un <select>, este módulo también recuerda
+ *      cuál está elegido (no hay un .value nativo que preguntar).
  *
  * No dibuja el resultado ni el estado: eso lo hace panelResultados.js al
- * recibir los mensajes de vuelta.
+ * recibir los mensajes de vuelta. Tampoco decide cómo se ve la palanca según
+ * el género: eso lo hace renderizadorPalanca.js, a partir del nombre_genero
+ * que ya viaja en leerParametrosActuales().
  */
 
 import { TIPO_MENSAJE_SALIENTE, URL_CONFIGURACION } from "../configuracion.js";
@@ -36,6 +42,7 @@ const IDS_SLIDERS = Object.freeze({
 });
 
 const ID_SELECTOR_GRAVEDAD = "selector-gravedad";
+const ID_GRUPO_GENERO = "selector-genero";
 const ID_BOTON_PERTURBAR = "boton-perturbar";
 const ID_BOTON_REINICIAR = "boton-reiniciar";
 // Cada botón de preset trae en data-preset la clave que usar en
@@ -50,6 +57,9 @@ export class Controles {
     this._cliente = clienteWebSocket;
     this._elementosSlider = this._obtenerElementosSlider();
     this._selectorGravedad = document.getElementById(ID_SELECTOR_GRAVEDAD);
+    this._grupoGenero = document.getElementById(ID_GRUPO_GENERO);
+    this._botonesGenero = [];
+    this._nombreGeneroActual = null;
     this._botonPerturbar = document.getElementById(ID_BOTON_PERTURBAR);
     this._botonReiniciar = document.getElementById(ID_BOTON_REINICIAR);
     this._botonesPreset = document.querySelectorAll(SELECTOR_BOTONES_PRESET);
@@ -62,6 +72,10 @@ export class Controles {
   async inicializar() {
     this._configuracion = await this._pedirConfiguracion();
     this._aplicarRangos(this._configuracion.rangos);
+    this._aplicarGeneros(
+      this._configuracion.generos_disponibles,
+      this._configuracion.genero_inicial,
+    );
     this._conectarEventos();
   }
 
@@ -77,7 +91,10 @@ export class Controles {
 
   /** Lee los valores actuales de todos los controles, listos para validar_parametros(). */
   leerParametrosActuales() {
-    const parametros = { nombre_gravedad: this._selectorGravedad.value };
+    const parametros = {
+      nombre_gravedad: this._selectorGravedad.value,
+      nombre_genero: this._nombreGeneroActual,
+    };
     for (const [nombreParametro, referencias] of Object.entries(
       this._elementosSlider,
     )) {
@@ -124,6 +141,47 @@ export class Controles {
       referencias.control.step = rango.paso;
       referencias.control.value = rango.valor_inicial;
       this._actualizarTextoValor(nombreParametro);
+    }
+  }
+
+  /**
+   * Crea un botón por cada género de generos_disponibles ({clave: nombre
+   * legible}) y deja marcado el inicial. Ningún nombre se escribe a mano
+   * aquí: todos vienen del backend. No envía nada todavía: recién al hacer
+   * clic en uno (ver _elegirGenero) se manda el cambio, igual que un
+   * <select> no dispara "change" solo por fijarle el valor inicial.
+   */
+  _aplicarGeneros(generosDisponibles, generoInicial) {
+    this._botonesGenero = Object.entries(generosDisponibles).map(
+      ([clave, nombre]) => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "boton";
+        boton.textContent = nombre;
+        boton.dataset.genero = clave;
+        boton.addEventListener("click", () => this._elegirGenero(clave));
+        return boton;
+      },
+    );
+    this._grupoGenero.replaceChildren(...this._botonesGenero);
+    this._nombreGeneroActual = generoInicial;
+    this._marcarGeneroActivo(generoInicial);
+  }
+
+  /** Se llama al hacer clic en un botón de género: marca, guarda y envía. */
+  _elegirGenero(nombreGenero) {
+    this._nombreGeneroActual = nombreGenero;
+    this._marcarGeneroActivo(nombreGenero);
+    this._enviarParametros();
+  }
+
+  /** Resalta el botón del género activo (boton--primario) y apaga los demás. */
+  _marcarGeneroActivo(nombreGenero) {
+    for (const boton of this._botonesGenero) {
+      const activo = boton.dataset.genero === nombreGenero;
+      boton.classList.toggle("boton--primario", activo);
+      boton.classList.toggle("boton--secundario", !activo);
+      boton.setAttribute("aria-pressed", String(activo));
     }
   }
 
@@ -174,6 +232,8 @@ export class Controles {
       this._actualizarTextoValor(nombreParametro);
     }
     this._selectorGravedad.value = preset.nombre_gravedad;
+    this._nombreGeneroActual = preset.nombre_genero;
+    this._marcarGeneroActivo(preset.nombre_genero);
     this._enviarParametros();
   }
 
