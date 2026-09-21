@@ -139,6 +139,33 @@ def test_nombre_genero_desconocido_se_rechaza():
     assert informacion.value.nombre_parametro == "nombre_genero"
 
 
+def test_geometria_invalida_para_el_genero_se_rechaza():
+    # PARAMETROS_VALIDOS trae distancia_carga_m=0.5 y distancia_esfuerzo_m=2:
+    # válido para segundo género (carga entre fulcro y esfuerzo), pero
+    # justo al revés de lo que exige el tercero (esfuerzo entre fulcro y
+    # carga), así que debe rechazarse aunque cada distancia esté en rango.
+    texto = _texto(
+        tipo="parametros", parametros={**PARAMETROS_VALIDOS, "nombre_genero": "tercer_genero"}
+    )
+    with pytest.raises(ParametroInvalidoError) as informacion:
+        interpretar_mensaje(texto)
+    assert informacion.value.nombre_parametro == "distancia_esfuerzo_m"
+
+
+def test_geometria_valida_para_el_genero_se_acepta():
+    texto = _texto(
+        tipo="parametros",
+        parametros={
+            **PARAMETROS_VALIDOS,
+            "distancia_carga_m": 1.5,
+            "distancia_esfuerzo_m": 0.3,
+            "nombre_genero": "tercer_genero",
+        },
+    )
+    mensaje = interpretar_mensaje(texto)
+    assert mensaje.parametros.nombre_genero == "tercer_genero"
+
+
 @pytest.mark.parametrize(
     "texto",
     [

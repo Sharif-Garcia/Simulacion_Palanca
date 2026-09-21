@@ -36,3 +36,11 @@ export const TIPO_MENSAJE_SALIENTE = Object.freeze({
   PERTURBAR: "perturbar",
   REINICIAR: "reiniciar",
 });
+
+// --- Géneros de palanca (deben coincidir con backend/dominio/estatica.py) -----
+// Único género con el esfuerzo y la carga en LADOS OPUESTOS del fulcro; en
+// segundo y tercer género quedan del MISMO lado (ver GENEROS_DISPONIBLES). No
+// es un nombre para mostrar en pantalla (esos vienen de generos_disponibles):
+// es la clave del protocolo, la misma que usa el backend, para que el dibujo
+// de la palanca y las fórmulas de la interfaz sepan qué disposición mostrar.
+export const GENERO_LADOS_OPUESTOS = "primer_genero";

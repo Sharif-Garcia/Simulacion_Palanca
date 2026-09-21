@@ -96,7 +96,10 @@ RANGOS_PARAMETROS = MappingProxyType(
         ),
         "distancia_carga_m": RangoParametro(
             etiqueta="Distancia carga al fulcro", unidad="m",
-            minimo=0.1, maximo=3.0, paso=0.05, valor_inicial=0.5,
+            # Mismo máximo que distancia_esfuerzo_m: en segundo y tercer
+            # género la carga y el esfuerzo comparten el mismo lado del
+            # fulcro, así que la carga debe poder recorrer todo ese rango.
+            minimo=0.1, maximo=5.0, paso=0.05, valor_inicial=0.5,
         ),
         "distancia_esfuerzo_m": RangoParametro(
             etiqueta="Distancia esfuerzo al fulcro", unidad="m",

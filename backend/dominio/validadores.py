@@ -70,8 +70,8 @@ def validar_nombre_gravedad(valor: object) -> str:
     return valor
 
 
-def validar_nombre_genero(valor: object) -> str:
-    """Valida que el género elegido exista en el registro de estatica.py.
+def _generos_disponibles():
+    """Registro de géneros de estatica.py, con import diferido.
 
     Import diferido (dentro de la función, no al nivel del módulo): estatica.py
     importa exigir_positivo de este mismo módulo, así que un import de
@@ -81,11 +81,17 @@ def validar_nombre_genero(valor: object) -> str:
     """
     from backend.dominio.estatica import GENEROS_DISPONIBLES
 
-    if not isinstance(valor, str) or valor not in GENEROS_DISPONIBLES:
+    return GENEROS_DISPONIBLES
+
+
+def validar_nombre_genero(valor: object) -> str:
+    """Valida que el género elegido exista en el registro de estatica.py."""
+    generos = _generos_disponibles()
+    if not isinstance(valor, str) or valor not in generos:
         raise ParametroInvalidoError(
             CLAVE_GENERO,
             valor,
-            f"debe ser uno de {list(GENEROS_DISPONIBLES)}",
+            f"debe ser uno de {list(generos)}",
         )
     return valor
 
@@ -117,6 +123,14 @@ def validar_parametros(datos: Mapping[str, object]) -> ParametrosPalanca:
     # trae (por ejemplo, un cliente viejo sin selector de género todavía) se
     # usa el género inicial en vez de rechazar el mensaje.
     nombre_genero = validar_nombre_genero(datos.get(CLAVE_GENERO, configuracion.GENERO_INICIAL))
+
+    # Cada género valida su propia disposición geométrica (por ejemplo, en el
+    # segundo la carga debe quedar entre el fulcro y el esfuerzo): ver
+    # GeneroPalanca.validar_geometria en estatica.py. El primer género no
+    # restringe nada.
+    _generos_disponibles()[nombre_genero].validar_geometria(
+        valores_numericos["distancia_carga_m"], valores_numericos["distancia_esfuerzo_m"]
+    )
 
     return ParametrosPalanca(
         **valores_numericos, nombre_gravedad=nombre_gravedad, nombre_genero=nombre_genero

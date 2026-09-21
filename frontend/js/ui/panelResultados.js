@@ -4,7 +4,15 @@
  *
  * Responsabilidad única: formatear y mostrar. No calcula nada (eso ya lo
  * resolvió el backend) y no sabe nada de la conexión ni de los sliders.
+ *
+ * Excepción: la fórmula de la reacción en el fulcro (R) sí depende del
+ * género activo (R = F + W en primer género, R = W - F en segundo y
+ * tercero), y el género no viaja en el mensaje "resultados". Por eso
+ * actualizarGenero() existe aparte: main.js la llama cuando Controles avisa
+ * que el género cambió, no cuando llega un mensaje del WebSocket.
  */
+
+import { GENERO_LADOS_OPUESTOS } from "../configuracion.js";
 
 // Texto e insignia para cada valor de EstadoPalanca (backend/dominio/modelos.py).
 const PRESENTACION_ESTADO = Object.freeze({
@@ -76,6 +84,16 @@ export class PanelResultados {
     this._indicadorConexion = document.getElementById("indicador-conexion");
     this._textoConexion = document.getElementById("texto-conexion");
     this._contadorCuadros = 0;
+
+    // Dos versiones de la fórmula de R, una por disposición geométrica (ver
+    // actualizarGenero). Cada una vive dos veces en el HTML: junto al
+    // resultado y en la tarjeta de ecuaciones.
+    this._formulasReaccionLadosOpuestos = document.querySelectorAll(
+      "#formula-reaccion-lados-opuestos, #ecuacion-reaccion-lados-opuestos",
+    );
+    this._formulasReaccionMismoLado = document.querySelectorAll(
+      "#formula-reaccion-mismo-lado, #ecuacion-reaccion-mismo-lado",
+    );
   }
 
   /**
@@ -141,6 +159,23 @@ export class PanelResultados {
     this._indicadorConexion.className = `indicador-conexion indicador-conexion--${estado}`;
     this._textoConexion.textContent = TEXTO_ESTADO_CONEXION[estado] ?? estado;
   }
+
+  /**
+   * Muestra la fórmula de R que corresponde al género activo y oculta la
+   * otra. Se llama cuando Controles avisa un cambio de género (ver main.js),
+   * no con cada mensaje "resultados": el número de R sí llega ahí, pero de
+   * qué fórmula viene no.
+   */
+  actualizarGenero(nombreGenero) {
+    const ladosOpuestos = nombreGenero === GENERO_LADOS_OPUESTOS;
+    for (const formula of this._formulasReaccionLadosOpuestos) {
+      formula.hidden = !ladosOpuestos;
+    }
+    for (const formula of this._formulasReaccionMismoLado) {
+      formula.hidden = ladosOpuestos;
+    }
+  }
+
   // --- Internos ------------------------------------------------------------------
 
   _ocultarError() {

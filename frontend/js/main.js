@@ -32,7 +32,10 @@ async function iniciar() {
     alCambiarEstado: (estado) => panelResultados.mostrarEstadoConexion(estado),
   });
 
-  const controles = new Controles(cliente);
+  const controles = new Controles(cliente, {
+    alCambiarGenero: (nombreGenero) =>
+      panelResultados.actualizarGenero(nombreGenero),
+  });
 
   function manejarMensaje(mensaje) {
     switch (mensaje.tipo) {

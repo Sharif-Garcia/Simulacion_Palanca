@@ -12,6 +12,7 @@ validadores.py), pero se protege de divisiones por cero.
 from abc import ABC, abstractmethod
 from types import MappingProxyType
 
+from backend.dominio.excepciones import ParametroInvalidoError
 from backend.dominio.validadores import exigir_positivo
 from backend.dominio.modelos import ParametrosPalanca, ResultadosEstaticos
 
@@ -35,6 +36,20 @@ class GeneroPalanca(ABC):
     @abstractmethod
     def reaccion_fulcro_n(self, peso_n: float, fuerza_n: float) -> float:
         """Fuerza de reacción que ejerce el apoyo sobre la barra."""
+
+    def validar_geometria(self, distancia_carga_m: float, distancia_esfuerzo_m: float) -> None:
+        """Verifica la disposición entre los dos brazos que exige este género.
+
+        No todos los géneros restringen algo: el primero no lo hace (el
+        fulcro va entre los dos, en cualquier proporción), así que la
+        implementación por defecto no valida nada. Las subclases que sí
+        necesitan una relación entre los brazos (segundo y tercer género, que
+        van del mismo lado del fulcro) la sobrescriben y lanzan
+        ParametroInvalidoError si no se cumple. Cada género sabe validar su
+        propia geometría, en vez de que validadores.py tenga un if por
+        género.
+        """
+        return None
 
     def torque_neto_n_m(
         self,
@@ -101,6 +116,16 @@ class SegundoGenero(GeneroPalanca):
     def reaccion_fulcro_n(self, peso_n: float, fuerza_n: float) -> float:
         return peso_n - fuerza_n
 
+    def validar_geometria(self, distancia_carga_m: float, distancia_esfuerzo_m: float) -> None:
+        """La carga debe quedar entre el fulcro y el esfuerzo: d_r < d_e."""
+        if not distancia_carga_m < distancia_esfuerzo_m:
+            raise ParametroInvalidoError(
+                "distancia_carga_m",
+                distancia_carga_m,
+                "en el segundo género debe ser menor que la distancia del "
+                "esfuerzo (la carga queda entre el fulcro y el esfuerzo)",
+            )
+
 
 SEGUNDO_GENERO = SegundoGenero()
 
@@ -131,6 +156,16 @@ class TercerGenero(GeneroPalanca):
 
     def reaccion_fulcro_n(self, peso_n: float, fuerza_n: float) -> float:
         return peso_n - fuerza_n
+
+    def validar_geometria(self, distancia_carga_m: float, distancia_esfuerzo_m: float) -> None:
+        """El esfuerzo debe quedar entre el fulcro y la carga: d_e < d_r."""
+        if not distancia_esfuerzo_m < distancia_carga_m:
+            raise ParametroInvalidoError(
+                "distancia_esfuerzo_m",
+                distancia_esfuerzo_m,
+                "en el tercer género debe ser menor que la distancia de la "
+                "carga (el esfuerzo queda entre el fulcro y la carga)",
+            )
 
 
 TERCER_GENERO = TercerGenero()

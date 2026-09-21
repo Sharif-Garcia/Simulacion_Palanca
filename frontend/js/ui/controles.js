@@ -15,6 +15,12 @@
  *      legibles incluidos): ni el HTML ni este módulo hardcodean "Primer
  *      género", etc. Como no son un <select>, este módulo también recuerda
  *      cuál está elegido (no hay un .value nativo que preguntar).
+ *   6. En segundo y tercer género, acoplar los sliders de distancia: cada
+ *      uno tiene una restricción con el otro (ver GENEROS_DISPONIBLES en
+ *      backend/dominio/estatica.py — validadores.py la exige igual, pero
+ *      solo como red de seguridad), así que este módulo nunca deja que el
+ *      slider "arrastre" al otro más allá de esa restricción, en vez de
+ *      dejar que el usuario choque con el mensaje de error del backend.
  *
  * No dibuja el resultado ni el estado: eso lo hace panelResultados.js al
  * recibir los mensajes de vuelta. Tampoco decide cómo se ve la palanca según
@@ -23,6 +29,13 @@
  */
 
 import { TIPO_MENSAJE_SALIENTE, URL_CONFIGURACION } from "../configuracion.js";
+
+// Los dos géneros donde la carga y el esfuerzo comparten lado del fulcro y
+// por eso necesitan una separación mínima entre sus distancias (ver
+// GENEROS_DISPONIBLES en backend/dominio/estatica.py). El primer género no
+// aparece aquí a propósito: ahí los sliders son independientes.
+const GENERO_SEGUNDO = "segundo_genero";
+const GENERO_TERCERO = "tercer_genero";
 
 // Los "name" de estos inputs coinciden con las claves de RANGOS_PARAMETROS en
 // configuracion.py, así el mapeo entre backend y frontend es directo.
@@ -52,9 +65,15 @@ const SELECTOR_BOTONES_PRESET = "[data-preset]";
 export class Controles {
   /**
    * @param {import("../red/clienteWebSocket.js").ClienteWebSocket} clienteWebSocket
+   * @param {{alCambiarGenero?: (nombreGenero: string) => void}} [callbacks]
+   *   alCambiarGenero: se llama con el nuevo género apenas se elige (antes de
+   *   que el backend confirme el cambio), para que otros módulos que no
+   *   escuchan el WebSocket (como panelResultados.js, para la fórmula de R)
+   *   puedan reaccionar. Mismo patrón que los callbacks de ClienteWebSocket.
    */
-  constructor(clienteWebSocket) {
+  constructor(clienteWebSocket, { alCambiarGenero = () => {} } = {}) {
     this._cliente = clienteWebSocket;
+    this._alCambiarGenero = alCambiarGenero;
     this._elementosSlider = this._obtenerElementosSlider();
     this._selectorGravedad = document.getElementById(ID_SELECTOR_GRAVEDAD);
     this._grupoGenero = document.getElementById(ID_GRUPO_GENERO);
@@ -141,7 +160,24 @@ export class Controles {
       referencias.control.step = rango.paso;
       referencias.control.value = rango.valor_inicial;
       this._actualizarTextoValor(nombreParametro);
+      this._actualizarEtiquetasRango(referencias.control, rango);
     }
+  }
+
+  /**
+   * Actualiza el texto "mínimo ... máximo" bajo el slider (por ejemplo
+   * "0.1 m ... 5 m"). Vive fijo en el HTML como marcador visual, pero el
+   * número real siempre sale de rango (GET /api/configuracion): si no se
+   * actualizara, quedaría desactualizado apenas configuracion.py cambiara
+   * un mínimo o un máximo (como pasó con distancia_carga_m).
+   */
+  _actualizarEtiquetasRango(control, rango) {
+    const [spanMinimo, spanMaximo] = control
+      .closest(".control-deslizante")
+      ?.querySelectorAll(".control-deslizante__rango span") ?? [];
+    if (!spanMinimo || !spanMaximo) return;
+    spanMinimo.textContent = `${rango.minimo} ${rango.unidad}`;
+    spanMaximo.textContent = `${rango.maximo} ${rango.unidad}`;
   }
 
   /**
@@ -166,12 +202,19 @@ export class Controles {
     this._grupoGenero.replaceChildren(...this._botonesGenero);
     this._nombreGeneroActual = generoInicial;
     this._marcarGeneroActivo(generoInicial);
+    this._alCambiarGenero(generoInicial);
   }
 
   /** Se llama al hacer clic en un botón de género: marca, guarda y envía. */
   _elegirGenero(nombreGenero) {
     this._nombreGeneroActual = nombreGenero;
     this._marcarGeneroActivo(nombreGenero);
+    this._alCambiarGenero(nombreGenero);
+    // Las distancias vigentes pudieron quedar armadas para otro género (por
+    // ejemplo, viniendo de primer género sin ninguna restricción entre
+    // ellas): antes de enviar, se corrigen si hace falta para que este
+    // cambio de género nunca llegue como una combinación inválida.
+    this._forzarSeparacionSiHaceFalta();
     this._enviarParametros();
   }
 
@@ -185,12 +228,93 @@ export class Controles {
     }
   }
 
+  /**
+   * Para segundo y tercer género, cuál de las dos distancias debe quedar
+   * más chica y cuál más grande (ver GeneroPalanca.validar_geometria en
+   * backend/dominio/estatica.py). null en primer género: ahí no hay
+   * restricción, así que tampoco hay acoplamiento.
+   */
+  _relacionGeneroActual() {
+    if (this._nombreGeneroActual === GENERO_SEGUNDO) {
+      // La carga debe quedar entre el fulcro y el esfuerzo.
+      return { menor: "distancia_carga_m", mayor: "distancia_esfuerzo_m" };
+    }
+    if (this._nombreGeneroActual === GENERO_TERCERO) {
+      // El esfuerzo debe quedar entre el fulcro y la carga.
+      return { menor: "distancia_esfuerzo_m", mayor: "distancia_carga_m" };
+    }
+    return null;
+  }
+
+  /**
+   * Si el género activo lo exige y la separación actual entre las dos
+   * distancias es menor a un paso, empareja hacia mayorClave (el valor por
+   * defecto cuando no sabemos cuál se está arrastrando, por ejemplo al
+   * cambiar de género o al aplicar un preset).
+   */
+  _forzarSeparacionSiHaceFalta() {
+    const relacion = this._relacionGeneroActual();
+    if (!relacion) return;
+    this._forzarSeparacion(relacion.menor, relacion.mayor, relacion.mayor);
+  }
+
+  /**
+   * Se llama con cada "input" de un slider de distancia. Si el género activo
+   * exige una separación mínima y arrastrar claveQueSeMovio la redujo por
+   * debajo de un paso, mueve el OTRO slider junto con él (en el mismo
+   * sentido), en vez de dejar que se crucen.
+   */
+  _acoplarDistancias(claveQueSeMovio) {
+    const relacion = this._relacionGeneroActual();
+    if (!relacion) return;
+    const { menor, mayor } = relacion;
+    const claveAAjustar = claveQueSeMovio === menor ? mayor : menor;
+    this._forzarSeparacion(menor, mayor, claveAAjustar);
+  }
+
+  /**
+   * Garantiza mayorClave >= menorClave + un paso. Ajusta primero
+   * claveAAjustar; si esa no alcanza a abrir suficiente separación porque
+   * chocaría con su propio mínimo o máximo, ajusta también la otra (así el
+   * resultado siempre es válido, nunca solo "lo más cerca posible").
+   */
+  _forzarSeparacion(menorClave, mayorClave, claveAAjustar) {
+    const controlMenor = this._elementosSlider[menorClave].control;
+    const controlMayor = this._elementosSlider[mayorClave].control;
+    const paso = Number(controlMenor.step);
+
+    let valorMenor = Number(controlMenor.value);
+    let valorMayor = Number(controlMayor.value);
+    if (valorMayor - valorMenor >= paso) {
+      return; // ya hay separación suficiente, no hay nada que acoplar
+    }
+
+    if (claveAAjustar === mayorClave) {
+      valorMayor = Math.min(valorMenor + paso, Number(controlMayor.max));
+      valorMenor = Math.min(valorMenor, valorMayor - paso);
+    } else {
+      valorMenor = Math.max(valorMayor - paso, Number(controlMenor.min));
+      valorMayor = Math.max(valorMayor, valorMenor + paso);
+    }
+
+    controlMenor.value = valorMenor;
+    controlMayor.value = valorMayor;
+    this._actualizarTextoValor(menorClave);
+    this._actualizarTextoValor(mayorClave);
+  }
+
   _conectarEventos() {
     for (const nombreParametro of Object.keys(this._elementosSlider)) {
+      const esDistancia =
+        nombreParametro === "distancia_carga_m" ||
+        nombreParametro === "distancia_esfuerzo_m";
       this._elementosSlider[nombreParametro].control.addEventListener(
         "input",
         () => {
           this._actualizarTextoValor(nombreParametro);
+          if (esDistancia) {
+            this._acoplarDistancias(nombreParametro);
+          }
           this._enviarParametros();
         },
       );
@@ -218,6 +342,13 @@ export class Controles {
   /**
    * Copia un preset de presets_amortiguamiento a los sliders y lo envía,
    * exactamente como si la persona hubiera movido cada control a mano.
+   *
+   * A propósito NO toca el género: los presets son una demostración del
+   * amortiguamiento (ζ), no del género, así que el backend siempre arma su
+   * fuerza de equilibrio en primer género (ver
+   * _construir_preset_amortiguamiento en esquemas.py) — pero esa fórmula es
+   * la misma en los tres géneros, así que aplicar el preset conservando el
+   * género que la persona ya tenga elegido sigue siendo válido.
    */
   _aplicarPreset(nombrePreset) {
     const preset = this._configuracion.presets_amortiguamiento?.[nombrePreset];
@@ -232,8 +363,10 @@ export class Controles {
       this._actualizarTextoValor(nombreParametro);
     }
     this._selectorGravedad.value = preset.nombre_gravedad;
-    this._nombreGeneroActual = preset.nombre_genero;
-    this._marcarGeneroActivo(preset.nombre_genero);
+    // El preset trae distancias fijas pensadas para primer género (ver el
+    // comentario de arriba); si segundo o tercer género está activo, se
+    // corrigen para no violar su restricción geométrica.
+    this._forzarSeparacionSiHaceFalta();
     this._enviarParametros();
   }
 

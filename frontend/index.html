@@ -290,8 +290,14 @@
                     ><span id="resultado-reaccion">—</span
                     ><span class="resultado__unidad">N</span></span
                   >
-                  <span class="formula"
+                  <!-- Dos versiones de la fórmula: panelResultados.js muestra
+                       la que corresponde al género activo (ver
+                       actualizarGenero) y oculta la otra con [hidden]. -->
+                  <span class="formula" id="formula-reaccion-lados-opuestos"
                     ><var>R</var> = <var>F</var> + <var>W</var></span
+                  >
+                  <span class="formula" id="formula-reaccion-mismo-lado" hidden
+                    ><var>R</var> = <var>W</var> − <var>F</var></span
                   >
                 </div>
               </div>
@@ -557,8 +563,11 @@
                 <span class="resultado__etiqueta"
                   >Reacción en el fulcro (R)</span
                 >
-                <span class="formula"
+                <span class="formula" id="ecuacion-reaccion-lados-opuestos"
                   ><var>R</var> = <var>F</var> + <var>W</var></span
+                >
+                <span class="formula" id="ecuacion-reaccion-mismo-lado" hidden
+                  ><var>R</var> = <var>W</var> − <var>F</var></span
                 >
               </div>
             </div>

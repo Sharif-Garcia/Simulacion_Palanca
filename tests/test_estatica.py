@@ -146,3 +146,39 @@ def test_nombres_legibles_de_los_tres_generos():
     assert PRIMER_GENERO.nombre == "Primer género"
     assert SEGUNDO_GENERO.nombre == "Segundo género"
     assert TERCER_GENERO.nombre == "Tercer género"
+
+
+# --- Restricción geométrica entre los brazos (validar_geometria) --------------------
+def test_primer_genero_no_restringe_la_geometria():
+    # No debe lanzar sin importar cuál brazo sea más largo.
+    PRIMER_GENERO.validar_geometria(distancia_carga_m=5.0, distancia_esfuerzo_m=0.1)
+    PRIMER_GENERO.validar_geometria(distancia_carga_m=0.1, distancia_esfuerzo_m=5.0)
+
+
+def test_segundo_genero_exige_carga_mas_cerca_que_esfuerzo():
+    # Válido: la carga (0.5) queda entre el fulcro y el esfuerzo (2.0).
+    SEGUNDO_GENERO.validar_geometria(distancia_carga_m=0.5, distancia_esfuerzo_m=2.0)
+
+
+def test_segundo_genero_rechaza_carga_mas_lejos_que_esfuerzo():
+    with pytest.raises(ParametroInvalidoError) as informacion:
+        SEGUNDO_GENERO.validar_geometria(distancia_carga_m=2.0, distancia_esfuerzo_m=0.5)
+    assert informacion.value.nombre_parametro == "distancia_carga_m"
+
+
+def test_segundo_genero_rechaza_distancias_iguales():
+    # La restricción es estricta (<), no <=: con brazos iguales el fulcro no
+    # tiene una "punta" clara.
+    with pytest.raises(ParametroInvalidoError):
+        SEGUNDO_GENERO.validar_geometria(distancia_carga_m=1.0, distancia_esfuerzo_m=1.0)
+
+
+def test_tercer_genero_exige_esfuerzo_mas_cerca_que_carga():
+    # Válido: el esfuerzo (0.3) queda entre el fulcro y la carga (1.5).
+    TERCER_GENERO.validar_geometria(distancia_carga_m=1.5, distancia_esfuerzo_m=0.3)
+
+
+def test_tercer_genero_rechaza_esfuerzo_mas_lejos_que_carga():
+    with pytest.raises(ParametroInvalidoError) as informacion:
+        TERCER_GENERO.validar_geometria(distancia_carga_m=0.5, distancia_esfuerzo_m=2.0)
+    assert informacion.value.nombre_parametro == "distancia_esfuerzo_m"

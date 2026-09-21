@@ -7,10 +7,13 @@
  *
  * Convención de lados (ver backend/dominio/estatica.py, GENEROS_DISPONIBLES):
  *   - Primer género: el fulcro queda ENTRE el esfuerzo y la carga (lados
- *     opuestos), como un balancín.
+ *     opuestos), como un balancín. El esfuerzo empuja hacia abajo, igual que
+ *     el peso.
  *   - Segundo y tercer género: el esfuerzo y la carga quedan del MISMO lado
  *     del fulcro (cuál de los dos brazos es más corto ya lo deciden los
- *     sliders, no el dibujo: ver GENERO_LADOS_OPUESTOS más abajo).
+ *     sliders, no el dibujo). El esfuerzo actúa hacia ARRIBA, en sentido
+ *     contrario al peso (por eso la palanca se sostiene): su flecha se
+ *     dibuja al revés que en el primer género.
  *
  * Escala fija, fulcro fijo: la escala (píxeles por metro) se calcula UNA
  * SOLA VEZ a partir de las distancias MÁXIMAS posibles (establecerLimites),
@@ -22,6 +25,7 @@
  */
 
 import { leerTema } from "../utilidades/tema.js";
+import { GENERO_LADOS_OPUESTOS } from "../configuracion.js";
 
 const MARGEN_HORIZONTAL_PROPORCION = 0.12; // espacio a cada lado, relativo al ancho del canvas
 const GROSOR_BARRA_PX = 10;
@@ -30,12 +34,8 @@ const RADIO_CARGA_PX = 16;
 const LONGITUD_FLECHA_ESFUERZO_PX = 46;
 const GROSOR_LINEA_GUIA_PX = 1;
 
-// Único género con el esfuerzo y la carga en lados opuestos del fulcro (ver
-// GENEROS_DISPONIBLES en backend/dominio/estatica.py). No es un nombre para
-// mostrar en pantalla (esos vienen de generos_disponibles): es la clave del
-// protocolo que distingue cómo dibujar la barra, igual que este módulo ya
-// distingue mensajes por su "tipo" en vez de adivinarlo.
-const GENERO_LADOS_OPUESTOS = "primer_genero";
+// Sentido de una flecha vertical: hacia dónde apunta la punta.
+const SENTIDO = Object.freeze({ ABAJO: 1, ARRIBA: -1 });
 
 export class RenderizadorPalanca {
   /**
@@ -96,7 +96,7 @@ export class RenderizadorPalanca {
     this._dibujarLineaGuia(ctx, anchoCss, geometria);
     this._dibujarBarra(ctx, puntos, estado.en_tope);
     this._dibujarFulcro(ctx, geometria);
-    this._dibujarEsfuerzo(ctx, puntos.esfuerzo);
+    this._dibujarEsfuerzo(ctx, puntos.esfuerzo, parametros.nombre_genero);
     this._dibujarCarga(ctx, puntos.carga);
 
     ctx.restore();
@@ -221,8 +221,14 @@ export class RenderizadorPalanca {
     ctx.restore();
   }
 
-  _dibujarEsfuerzo(ctx, punto) {
-    this._dibujarFlechaVertical(ctx, punto, this._tema.esfuerzo, "F");
+  _dibujarEsfuerzo(ctx, punto, nombreGenero) {
+    // Primer género: el esfuerzo empuja hacia abajo, como la carga. Segundo
+    // y tercer género: actúa hacia arriba (en sentido contrario al peso), así
+    // que la flecha se dibuja al revés; el comportamiento físico ya sale así
+    // del backend (por eso la barra se mueve bien), esto es solo el dibujo.
+    const sentido =
+      nombreGenero === GENERO_LADOS_OPUESTOS ? SENTIDO.ABAJO : SENTIDO.ARRIBA;
+    this._dibujarFlechaVertical(ctx, punto, this._tema.esfuerzo, "F", 0, sentido);
   }
 
   _dibujarCarga(ctx, punto) {
@@ -233,18 +239,34 @@ export class RenderizadorPalanca {
     ctx.fill();
     ctx.restore();
 
+    // El peso siempre apunta hacia abajo, sin importar el género.
     this._dibujarFlechaVertical(
       ctx,
       punto,
       this._tema.carga,
       "W",
       RADIO_CARGA_PX,
+      SENTIDO.ABAJO,
     );
   }
 
-  _dibujarFlechaVertical(ctx, punto, color, etiqueta, desplazamientoY = 0) {
-    const yInicio = punto.y - LONGITUD_FLECHA_ESFUERZO_PX - desplazamientoY;
-    const yFin = punto.y - desplazamientoY - 4;
+  /**
+   * Dibuja una flecha vertical (fuerza) que "llega" al punto desde el lado
+   * indicado por sentido: ABAJO (por defecto) la flecha viene de arriba y
+   * apunta hacia el punto; ARRIBA es la misma flecha reflejada verticalmente
+   * (viene de abajo y apunta hacia arriba). desplazamientoY separa la flecha
+   * del punto (por ejemplo, para no encimarla con el círculo de la carga).
+   */
+  _dibujarFlechaVertical(
+    ctx,
+    punto,
+    color,
+    etiqueta,
+    desplazamientoY = 0,
+    sentido = SENTIDO.ABAJO,
+  ) {
+    const yInicio = punto.y - sentido * (LONGITUD_FLECHA_ESFUERZO_PX + desplazamientoY);
+    const yFin = punto.y - sentido * (desplazamientoY + 4);
 
     ctx.save();
     ctx.strokeStyle = color;
@@ -257,15 +279,15 @@ export class RenderizadorPalanca {
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(punto.x, yFin + 8);
-    ctx.lineTo(punto.x - 6, yFin - 4);
-    ctx.lineTo(punto.x + 6, yFin - 4);
+    ctx.moveTo(punto.x, yFin + sentido * 8);
+    ctx.lineTo(punto.x - 6, yFin - sentido * 4);
+    ctx.lineTo(punto.x + 6, yFin - sentido * 4);
     ctx.closePath();
     ctx.fill();
 
     ctx.font = "600 13px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(etiqueta, punto.x, yInicio - 8);
+    ctx.fillText(etiqueta, punto.x, yInicio - sentido * 8);
     ctx.restore();
   }
 
